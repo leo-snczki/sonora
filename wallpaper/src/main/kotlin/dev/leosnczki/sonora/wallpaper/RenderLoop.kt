@@ -19,7 +19,7 @@ data class SceneImages(val current: Bitmap?, val previous: Bitmap?)
 /** Where a render loop gets its frames from. Called on the render thread. */
 interface WallpaperScene {
     /** New images to upload since the last call, or null when unchanged. */
-    fun takeImages(): SceneImages?
+    fun takeImages(nanos: Long): SceneImages?
 
     fun frameAt(nanos: Long): SceneFrame
 
@@ -52,7 +52,7 @@ class RenderLoop(private val scene: WallpaperScene) : Choreographer.FrameCallbac
         surface?.let { core.releaseSurface(it) }
         surface = core.createWindowSurface(window).also { core.makeCurrent(it) }
         if (renderer == null) renderer = SceneRenderer().apply { init() }
-        scene.takeImages()?.let { renderer?.setImages(it.current, it.previous) }
+        scene.takeImages(System.nanoTime())?.let { renderer?.setImages(it.current, it.previous) }
         schedule()
     }
 
@@ -123,7 +123,7 @@ class RenderLoop(private val scene: WallpaperScene) : Choreographer.FrameCallbac
         if (frameTimeNanos - lastFrameNanos >= interval - interval / 4) {
             lastFrameNanos = frameTimeNanos
             try {
-                scene.takeImages()?.let { draw.setImages(it.current, it.previous) }
+                scene.takeImages(frameTimeNanos)?.let { draw.setImages(it.current, it.previous) }
                 draw.draw(scene.frameAt(frameTimeNanos))
                 core.swapBuffers(target)
             } catch (e: RuntimeException) {

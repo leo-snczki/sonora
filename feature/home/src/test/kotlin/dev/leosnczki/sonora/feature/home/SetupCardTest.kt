@@ -29,4 +29,19 @@ class SetupCardTest {
 
         assertTrue(opened)
     }
+
+    @Test
+    fun offers_notification_access_and_opens_the_system_setting() {
+        var opened = false
+        val actions = object : HomeActions {
+            override fun allowNotificationAccess() {
+                opened = true
+            }
+        }
+        compose.setContent { HomeScreen(HomeScreenState.Preview.copy(notificationAccess = false), actions) }
+
+        compose.onNodeWithText("Allow access", ignoreCase = true).performScrollTo().performClick()
+
+        assertTrue(opened)
+    }
 }
