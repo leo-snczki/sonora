@@ -1,0 +1,17 @@
+  AA     4.74:1  text                     on bg                   
+  AAA   11.55:1  text                     on surface              
+  AAA   17.56:1  text                     on surface-modal        
+  AAA    8.35:1  text-muted               on surface              
+  AAA   12.70:1  text-muted               on surface-modal        
+  AAA   13.52:1  on-accent                on accent               
+  PASS   9.18:1  accent                   on surface              ui
+  PASS  13.96:1  accent                   on surface-modal        ui
+  PASS   4.74:1  border                   on bg                   ui
+  PASS   6.03:1  border-input             on surface              ui
+  PASS   9.17:1  border-input             on surface-modal        ui
+  PASS   3.64:1  track                    on surface              ui
+  AAA   10.34:1  danger                   on surface-modal        
+  AAA   10.97:1  success                  on surface-modal        
+  AAA   12.03:1  warning                  on surface-modal        
+
+  15 pairs, 0 failing AA
