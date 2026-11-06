@@ -3,18 +3,18 @@ Live wallpaper service with GL renderer,wallpaper,must,yes,yes,S03; plain OpenGL
 Fluid distortion of Album Art (domain warping),wallpaper,must,yes,yes,S03; our own shader
 Blur pass over the art,wallpaper,must,yes,yes,S03; Kawase / dual-filter blur
 Pause rendering when not visible,wallpaper,must,yes,yes,battery
-Now Playing from Media Sessions,now playing,must,yes,no,ADR-0002; NotificationListenerService grants access
-Accept any Player regardless of notification flags,now playing,must,no,no,fixes the original (YT Music ReVanced / Android 16); ADR-0002
-Now Playing selection rule (latest playing session wins; else last played paused),now playing,must,yes,no,grilling Q6
-10 s pause grace before Now Playing counts as stopped,now playing,must,no,no,avoids flashing between tracks; grilling Q9
-Re-colour wallpaper on track change with crossfade,now playing,must,yes,no,F02
+Now Playing from Media Sessions,now playing,must,yes,yes,ADR-0002; NotificationListenerService grants access
+Accept any Player regardless of notification flags,now playing,must,no,yes,fixes the original (YT Music ReVanced / Android 16); ADR-0002
+Now Playing selection rule (latest playing session wins; else last played paused),now playing,must,yes,yes,grilling Q6
+10 s pause grace before Now Playing counts as stopped,now playing,must,no,yes,avoids flashing between tracks; grilling Q9
+Re-colour wallpaper on track change with crossfade,now playing,must,yes,yes,F02
 Backdrop when there is no Album Art,wallpaper,must,yes,no,S02 idle
 Setup card (set wallpaper / notification access / audio optional),onboarding,must,yes,no,S01; card hides when all steps done
 Open the system wallpaper picker straight on Sonora,onboarding,must,no,yes,ACTION_CHANGE_LIVE_WALLPAPER
 Wallpaper metadata (label author description thumbnail settings activity),onboarding,must,yes,yes,S02
 Now Playing card (no access / nothing playing / playing),now playing,must,yes,no,S01
 Fluid group with override toggle (scale and speed min-max),settings,must,yes,no,group toggle like the original; off = defaults
-Speed drops to min when music pauses,wallpaper,must,yes,no,
+Speed drops to min when music pauses,wallpaper,must,yes,yes,
 Settings persisted and applied live,settings,must,yes,no,DataStore
 Two-column layout from 600dp,ui,must,yes,yes,reference device is a tablet; grilling Q16
 English and Portuguese (pt-BR) strings,ui,must,yes,yes,all text in resources; grilling Q18

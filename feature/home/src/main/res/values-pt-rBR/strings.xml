@@ -28,4 +28,6 @@
     <string name="setup_intro">Alguns passos para o Sonora acompanhar a sua música.</string>
     <string name="setup_wallpaper">Usar o Sonora como papel de parede</string>
     <string name="setup_wallpaper_action">Definir papel de parede</string>
+    <string name="setup_notifications">Deixar o Sonora ver o que está tocando</string>
+    <string name="setup_notifications_action">Permitir acesso</string>
 </resources>

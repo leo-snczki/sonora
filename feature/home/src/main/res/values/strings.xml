@@ -28,4 +28,6 @@
     <string name="setup_intro">A few steps so Sonora can follow your music.</string>
     <string name="setup_wallpaper">Make Sonora your wallpaper</string>
     <string name="setup_wallpaper_action">Set wallpaper</string>
+    <string name="setup_notifications">Let Sonora see what is playing</string>
+    <string name="setup_notifications_action">Allow access</string>
 </resources>
