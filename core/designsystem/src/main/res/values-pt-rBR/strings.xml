@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_loading">Carregando</string>
+    <string name="ds_step_of">Passo %1$d de %2$d</string>
+    <string name="ds_done">concluído</string>
+    <string name="ds_to_do">pendente</string>
+    <string name="ds_optional">opcional</string>
+    <string name="ds_selected">selecionado</string>
+    <string name="ds_on">ligado</string>
+    <string name="ds_off">desligado</string>
+</resources>
