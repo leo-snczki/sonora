@@ -16,8 +16,8 @@ Now Playing card (no access / nothing playing / playing),now playing,must,yes,no
 Fluid group with override toggle (scale and speed min-max),settings,must,yes,no,group toggle like the original; off = defaults
 Speed drops to min when music pauses,wallpaper,must,yes,no,
 Settings persisted and applied live,settings,must,yes,no,DataStore
-Two-column layout from 600dp,ui,must,yes,no,reference device is a tablet; grilling Q16
-English and Portuguese (pt-BR) strings,ui,must,yes,no,all text in resources; grilling Q18
+Two-column layout from 600dp,ui,must,yes,yes,reference device is a tablet; grilling Q16
+English and Portuguese (pt-BR) strings,ui,must,yes,yes,all text in resources; grilling Q18
 Beat Pulse,beats,should,yes,no,RECORD_AUDIO; Visualizer
 Beat Pulse strength slider,beats,should,yes,no,
 Beat Pulse permission rationale and locked state,beats,should,yes,no,
@@ -28,10 +28,10 @@ Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,no,S04; built-in = 
 Save the current Album Art as a Backdrop,backdrops,should,yes,no,S04 Mine
 Upload an image as a Backdrop with crop,backdrops,should,yes,no,S04 Mine + S05
 Misc group: brightness,settings,should,yes,no,-1..1
-Restart listener and help card,help,should,yes,no,S01 FAQ
+Restart listener and help card,help,should,yes,partial,S01 help card done; Restart listener comes with #7
 Battery optimisation hint on known OEMs,help,should,no,no,Xiaomi Samsung Huawei Oppo/OnePlus/Realme Vivo; grilling Q19
 Open a Player chooser,now playing,should,yes,no,S06
-About card with version and open-source licences,about,should,yes,no,fonts OFL + Lucide ISC need notices; grilling Q17
+About card with version and open-source licences,about,should,yes,yes,fonts OFL + Lucide ISC need notices; grilling Q17
 Performance mode,settings,could,yes,no,
 Adaptive launcher colour scheme (WallpaperColors),settings,could,yes,no,
 Debug view overlay,settings,could,yes,no,
