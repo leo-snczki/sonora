@@ -26,6 +26,7 @@ import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
 /** Everything the settings screen shows. Filled by [HomeViewModel] in the app. */
 data class HomeScreenState(
     val versionName: String,
+    val wallpaperSet: Boolean = false,
 ) {
     companion object {
         val Preview = HomeScreenState(versionName = "0.1.0")
@@ -34,6 +35,7 @@ data class HomeScreenState(
 
 /** Everything the settings screen can ask for. The activity turns these into intents. */
 interface HomeActions {
+    fun setWallpaper() {}
     fun openProjectPage() {}
     fun openLicences() {}
 
@@ -60,7 +62,8 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                     verticalArrangement = Arrangement.spacedBy(SonoraSpace.Sm),
                 ) {
                     SonoraHeader(stringResource(R.string.home_title), stringResource(R.string.home_tagline))
-                    val primary: List<@Composable () -> Unit> = listOf(
+                    val primary: List<@Composable () -> Unit> = listOfNotNull(
+                        if (!state.wallpaperSet) ({ SetupCard(state, actions) }) else null,
                         { NowPlayingCard() },
                     )
                     val secondary: List<@Composable () -> Unit> = listOf(

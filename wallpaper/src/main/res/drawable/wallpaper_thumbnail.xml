@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sonora's own preview art: soft colour fields like the wallpaper at rest. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <size android:width="240dp" android:height="240dp" />
+            <gradient android:angle="315" android:startColor="#FF6B4E9B" android:centerColor="#FFE0576F" android:endColor="#FF3F7CAC" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <gradient android:type="radial" android:gradientRadius="160dp" android:centerX="0.7" android:centerY="0.3" android:startColor="#99F2A65A" android:endColor="#00F2A65A" />
+        </shape>
+    </item>
+</layer-list>

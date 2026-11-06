@@ -33,6 +33,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":feature:home"))
+    implementation(project(":wallpaper"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)

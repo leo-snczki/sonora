@@ -23,4 +23,9 @@
     <string name="licences_icons">Ícones Lucide</string>
     <string name="licences_libraries">AndroidX, Jetpack Compose, Kotlin, Dagger Hilt</string>
     <string name="licences_apache">Licenciados sob a Apache License, Versão 2.0.</string>
+
+    <string name="setup_title">Primeiros passos</string>
+    <string name="setup_intro">Alguns passos para o Sonora acompanhar a sua música.</string>
+    <string name="setup_wallpaper">Usar o Sonora como papel de parede</string>
+    <string name="setup_wallpaper_action">Definir papel de parede</string>
 </resources>
