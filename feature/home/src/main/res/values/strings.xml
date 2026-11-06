@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Sonora</string>
+    <string name="home_tagline">Your music, painted on your wallpaper</string>
+
+    <string name="now_playing_title">Now playing</string>
+    <string name="now_playing_nothing">Nothing is playing yet.</string>
+
+    <string name="help_title">Help</string>
+    <string name="help_detection_q">How does Sonora know what is playing?</string>
+    <string name="help_detection_a">Music apps share what they play with the system through a media session. With notification access, Sonora reads that session: the album art, the title and whether it is playing. Nothing leaves your device.</string>
+    <string name="help_audio_q">Why does Beat Pulse ask for audio access?</string>
+    <string name="help_audio_a">To pulse with the beat, Sonora listens to the sound your device is already playing. It never uses the microphone and never records or stores audio.</string>
+
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_project_page">Project page</string>
+    <string name="about_licences">Open-source licences</string>
+
+    <string name="licences_title">Open-source licences</string>
+    <string name="licences_back">Back</string>
+    <string name="licences_fonts">Manrope and JetBrains Mono fonts</string>
+    <string name="licences_icons">Lucide icons</string>
+    <string name="licences_libraries">AndroidX, Jetpack Compose, Kotlin, Dagger Hilt</string>
+    <string name="licences_apache">Licensed under the Apache License, Version 2.0.</string>
+</resources>

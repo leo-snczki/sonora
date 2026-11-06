@@ -32,6 +32,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:home"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.hilt.android)
@@ -40,4 +41,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.robolectric)
+}
+
+android {
+    testOptions.unitTests.all {
+        it.systemProperty("sonora.rootDir", rootProject.projectDir.path)
+    }
 }
