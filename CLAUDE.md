@@ -29,3 +29,17 @@ Node, Python and Google's Android CLI (`android`: SDK, emulators, builds,
 `android analyze` for APK/AAB/JAR/AAR; pass `--no-metrics`). Playwright's browsers are at `$PLAYWRIGHT_BROWSERS_PATH`:
 install `@playwright/test` at the version matching them and skip
 `npx playwright install`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for leo-snczki/sonora (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
