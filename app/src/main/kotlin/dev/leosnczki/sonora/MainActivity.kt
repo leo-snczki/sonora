@@ -1,6 +1,8 @@
 package dev.leosnczki.sonora
 
+import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,36 +17,65 @@ import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
 import dev.leosnczki.sonora.feature.home.HomeScreenState
 import dev.leosnczki.sonora.feature.home.LicencesScreen
+import dev.leosnczki.sonora.wallpaper.SonoraWallpaperService
 
 private const val PROJECT_URL = "https://github.com/leo-snczki/sonora"
+private const val KEY_LICENCES = "licences"
 
 /** The settings screen. Also the live wallpaper's "settings" entry in the system picker. */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var state by mutableStateOf(HomeScreenState(versionName = BuildConfig.VERSION_NAME))
+
+    private val actions = object : HomeActions {
+        override fun setWallpaper() {
+            val component = ComponentName(this@MainActivity, SonoraWallpaperService::class.java)
+            val direct = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                .putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, component)
+            if (!startSafely(direct)) startSafely(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+        }
+
+        override fun openProjectPage() {
+            startSafely(Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_URL)))
+        }
+
+        override fun openLicences() {
+            showLicences = true
+        }
+    }
+
+    private var showLicences by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        showLicences = savedInstanceState?.getBoolean(KEY_LICENCES) == true
         setContent {
-            var showLicences by rememberSaveable { mutableStateOf(false) }
-            val actions = object : HomeActions {
-                override fun openProjectPage() = startSafely(Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_URL)))
-                override fun openLicences() {
-                    showLicences = true
-                }
-            }
             if (showLicences) {
                 LicencesScreen(onBack = { showLicences = false })
             } else {
-                HomeScreen(HomeScreenState(versionName = BuildConfig.VERSION_NAME), actions)
+                HomeScreen(state, actions)
             }
         }
     }
 
-    private fun startSafely(intent: Intent) {
-        try {
-            startActivity(intent)
-        } catch (_: ActivityNotFoundException) {
-            // No app can handle it (e.g. no browser); nothing useful to do.
-        }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_LICENCES, showLicences)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        state = state.copy(wallpaperSet = isSonoraTheWallpaper())
+    }
+
+    private fun isSonoraTheWallpaper(): Boolean =
+        WallpaperManager.getInstance(this).wallpaperInfo?.packageName == packageName
+
+    private fun startSafely(intent: Intent): Boolean = try {
+        startActivity(intent)
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
     }
 }
