@@ -31,3 +31,18 @@ replay_pid*
 
 # Android packages
 *.apk
+
+# Decompiled APKs and other scratch output
+work/
+
+# APK signing key and its password
+*.jks
+*.pass
+
+# Gradle and Android Studio
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
