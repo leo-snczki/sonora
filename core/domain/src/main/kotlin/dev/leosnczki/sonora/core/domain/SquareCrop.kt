@@ -34,10 +34,13 @@ data class SquareCrop(
     /** Moves the window by [dx], [dy] image pixels, as far as the image allows. */
     fun pan(dx: Float, dy: Float) = copy(centerX = centerX + dx, centerY = centerY + dy).clamped()
 
-    /** A quarter turn; the window goes back to the middle of the turned image. */
-    fun rotateRight() = turned((rotation + 90) % 360)
+    /**
+     * A clockwise quarter turn of the image as shown; the window goes back to the middle. The
+     * image is turned first and flipped after, so once flipped the stored turn runs the other way.
+     */
+    fun rotateRight() = turned((rotation + if (flipped) 270 else 90) % 360)
 
-    fun rotateLeft() = turned((rotation + 270) % 360)
+    fun rotateLeft() = turned((rotation + if (flipped) 90 else 270) % 360)
 
     fun flip() = copy(flipped = !flipped, centerX = width - centerX)
 
@@ -50,8 +53,26 @@ data class SquareCrop(
         return copy(centerX = centerX.coerceIn(half, width - half), centerY = centerY.coerceIn(half, height - half))
     }
 
-    private companion object {
-        const val MIN_ZOOM = 1f
-        const val MAX_ZOOM = 4f
+    companion object {
+        private const val MIN_ZOOM = 1f
+        private const val MAX_ZOOM = 4f
+
+        /**
+         * A crop that starts the way the camera held the photo, from its EXIF orientation tag
+         * (1–8; anything else is upright). Mirrored tags become a turn followed by a flip.
+         */
+        fun fromExif(imageWidth: Int, imageHeight: Int, orientation: Int): SquareCrop {
+            val (rotation, flipped) = when (orientation) {
+                2 -> 0 to true
+                3 -> 180 to false
+                4 -> 180 to true
+                5 -> 90 to true
+                6 -> 90 to false
+                7 -> 270 to true
+                8 -> 270 to false
+                else -> 0 to false
+            }
+            return SquareCrop(imageWidth, imageHeight, rotation, flipped)
+        }
     }
 }

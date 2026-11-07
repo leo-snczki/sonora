@@ -32,6 +32,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(libs.androidx.exifinterface)
     implementation(project(":feature:backdrops"))
     implementation(project(":feature:home"))
     implementation(project(":wallpaper"))

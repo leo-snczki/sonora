@@ -30,4 +30,5 @@
     <string name="crop_zoom_out">Zoom out</string>
     <string name="crop_cancel">Cancel</string>
     <string name="crop_use">Use</string>
+    <string name="upload_default_name">Image of %1$s</string>
 </resources>

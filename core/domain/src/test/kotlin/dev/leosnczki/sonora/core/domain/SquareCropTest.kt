@@ -51,4 +51,11 @@ class SquareCropTest {
         assertTrue(landscape.flip().flipped)
         assertEquals(landscape, landscape.flip().flip())
     }
+
+    @Test
+    fun a_photo_tagged_by_its_camera_starts_the_way_it_was_taken() {
+        assertEquals(90 to false, SquareCrop.fromExif(400, 200, orientation = 6).let { it.rotation to it.flipped })
+        assertEquals(180 to true, SquareCrop.fromExif(400, 200, orientation = 4).let { it.rotation to it.flipped })
+        assertEquals(0 to false, SquareCrop.fromExif(400, 200, orientation = 0).let { it.rotation to it.flipped }, "untagged")
+    }
 }

@@ -161,7 +161,7 @@ class MainActivity : ComponentActivity() {
             val cropping = picked
             when {
                 showLicences -> LicencesScreen(onBack = { showLicences = false })
-                cropping != null -> CropScreen(cropping.image, onUse = backdrops::useCrop, onCancel = backdrops::cancelCrop)
+                cropping != null -> CropScreen(cropping.image, cropping.crop, onUse = backdrops::useCrop, onCancel = backdrops::cancelCrop)
                 showBackdrops -> {
                     val library by backdrops.state.collectAsStateWithLifecycle()
                     BackdropLibraryScreen(library, backdropActions)

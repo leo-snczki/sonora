@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +48,8 @@ import dev.leosnczki.sonora.core.designsystem.component.SectionCardStyle
 import dev.leosnczki.sonora.core.designsystem.component.SonoraButton
 import dev.leosnczki.sonora.core.domain.SquareCrop
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import dev.leosnczki.sonora.core.designsystem.R as DsR
 
 /**
@@ -54,10 +57,20 @@ import dev.leosnczki.sonora.core.designsystem.R as DsR
  * the same through labelled buttons: rotate left and right, flip, zoom in and out.
  */
 @Composable
-fun CropScreen(image: Bitmap, onUse: (SquareCrop) -> Unit, onCancel: () -> Unit, modifier: Modifier = Modifier) {
+fun CropScreen(
+    image: Bitmap,
+    initial: SquareCrop,
+    onUse: (SquareCrop) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BackHandler(onBack = onCancel)
-    var crop by remember(image) { mutableStateOf(SquareCrop(image.width, image.height)) }
-    val shown = remember(image, crop.rotation, crop.flipped) { turned(image, crop).asImageBitmap() }
+    var crop by remember(image) { mutableStateOf(initial) }
+    // Turning a large image takes a moment: off the main thread, showing the last turn meanwhile.
+    val shown by produceState<ImageBitmap?>(null, image, crop.rotation, crop.flipped) {
+        val turn = crop
+        value = withContext(Dispatchers.Default) { turned(image, turn).asImageBitmap() }
+    }
     SonoraTheme {
         PageScrim(modifier) {
             Box(
@@ -75,13 +88,17 @@ fun CropScreen(image: Bitmap, onUse: (SquareCrop) -> Unit, onCancel: () -> Unit,
                             .aspectRatio(1f)
                             .border(SonoraSize.FocusRing, SonoraColors.Accent)
                             .pointerInput(image) {
-                                detectTransformGestures { _, pan, zoom, _ ->
+                                detectTransformGestures { centroid, pan, zoom, _ ->
                                     // Dragging moves the image under the frame: the window moves the other way.
+                                    // Pinching keeps the point between the fingers where it is.
                                     val perPixel = crop.sourceRect().size / size.width
-                                    crop = crop.zoomIn(zoom).pan(-pan.x * perPixel, -pan.y * perPixel)
+                                    val towards = 1f - 1f / zoom
+                                    val dx = (centroid.x - size.width / 2f) * towards - pan.x
+                                    val dy = (centroid.y - size.height / 2f) * towards - pan.y
+                                    crop = crop.zoomIn(zoom).pan(dx * perPixel, dy * perPixel)
                                 }
                             },
-                    ) { drawCrop(shown, crop) }
+                    ) { shown?.takeIf { it.width == crop.width && it.height == crop.height }?.let { drawCrop(it, crop) } }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         Tool(DsR.drawable.ic_rotate_ccw, R.string.crop_rotate_left) { crop = crop.rotateLeft() }
                         Tool(DsR.drawable.ic_rotate_cw, R.string.crop_rotate_right) { crop = crop.rotateRight() }
