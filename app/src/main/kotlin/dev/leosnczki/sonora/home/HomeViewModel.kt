@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.leosnczki.sonora.BuildConfig
+import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.DetectionWatch
 import dev.leosnczki.sonora.core.domain.NowPlaying
@@ -29,6 +30,7 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: NowPlayingRepository,
+    private val settings: SettingsRepository,
     private val device: DeviceStatus,
 ) : ViewModel() {
     private val detection = DetectionWatch()
@@ -45,6 +47,7 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch { repository.nowPlaying.collect { refreshCard() } }
         viewModelScope.launch { repository.sessionSeen.collect { refreshCard() } }
+        viewModelScope.launch { settings.settings.collect { value -> _state.update { it.copy(settings = value) } } }
         // The detection hint depends on time passing, so look again every few seconds.
         viewModelScope.launch {
             while (true) {
@@ -110,6 +113,16 @@ class HomeViewModel @Inject constructor(
     }
 
     fun messageShown() = _state.update { it.copy(message = null) }
+
+    fun setFluidOverride(enabled: Boolean) = save { settings.setFluidOverride(enabled) }
+
+    fun setFluidScale(scale: Float) = save { settings.setFluidScale(scale) }
+
+    fun setSpeedRange(min: Float, max: Float) = save { settings.setSpeedRange(min, max) }
+
+    private fun save(write: suspend () -> Unit) {
+        viewModelScope.launch { write() }
+    }
 
     fun openPlayerChooser() {
         viewModelScope.launch { _players.value = withContext(Dispatchers.Default) { device.installedPlayers() } }

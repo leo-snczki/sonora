@@ -26,6 +26,7 @@ import dev.leosnczki.sonora.core.designsystem.SonoraTheme
 import dev.leosnczki.sonora.core.designsystem.component.PageScrim
 import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
 import dev.leosnczki.sonora.core.designsystem.component.SonoraSnackbarHost
+import dev.leosnczki.sonora.core.domain.SonoraSettings
 
 /** Everything the settings screen shows. Filled by [HomeViewModel] in the app. */
 data class HomeScreenState(
@@ -34,6 +35,7 @@ data class HomeScreenState(
     val notificationAccess: Boolean = false,
     val nowPlaying: NowPlayingCardState = NowPlayingCardState.NoAccess,
     val message: HomeMessage? = null,
+    val settings: SonoraSettings = SonoraSettings.Default,
 ) {
     companion object {
         val Preview = HomeScreenState(versionName = "0.1.0")
@@ -51,6 +53,9 @@ interface HomeActions {
     fun openPlayer() {}
     fun restartListener() {}
     fun messageShown() {}
+    fun setFluidOverride(enabled: Boolean) {}
+    fun setFluidScale(scale: Float) {}
+    fun setSpeedRange(min: Float, max: Float) {}
     fun openProjectPage() {}
     fun openLicences() {}
 
@@ -80,6 +85,7 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                     val primary: List<@Composable () -> Unit> = listOfNotNull(
                         if (!state.wallpaperSet || !state.notificationAccess) ({ SetupCard(state, actions) }) else null,
                         { NowPlayingCard(state.nowPlaying, actions) },
+                        { LookCard(state.settings, actions) },
                     )
                     val secondary: List<@Composable () -> Unit> = listOf(
                         { HelpCard() },

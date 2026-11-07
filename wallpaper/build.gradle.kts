@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:render"))
     implementation(project(":core:media"))
+    implementation(project(":core:data"))
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

@@ -46,4 +46,17 @@
     <string name="chooser_empty_title">Nenhum app de música encontrado</string>
     <string name="chooser_empty_body">Instale um app de música ou abra direto o que você usa.</string>
     <string name="chooser_open">Abrir</string>
+    <string name="look_title">Aparência</string>
+    <string name="fluid_group">Movimento</string>
+    <string name="fluid_group_desc">Usar seus próprios ajustes do fluido em vez dos padrões</string>
+    <string name="fluid_scale">Escala do fluido</string>
+    <string name="fluid_scale_desc">Baixa deixa o fluxo calmo, alta faz ele girar</string>
+    <string name="fluid_scale_calm">Calmo</string>
+    <string name="fluid_scale_gentle">Suave</string>
+    <string name="fluid_scale_lively">Animado</string>
+    <string name="fluid_scale_turbulent">Turbulento</string>
+    <string name="fluid_speed">Velocidade</string>
+    <string name="fluid_speed_desc">Mais lenta com a música pausada, mais rápida enquanto toca</string>
+    <string name="fluid_speed_paused">Velocidade pausado</string>
+    <string name="fluid_speed_playing">Velocidade tocando</string>
 </resources>
