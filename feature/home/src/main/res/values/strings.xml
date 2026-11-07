@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Sonora</string>
+    <string name="home_tagline">Your music, painted on your wallpaper</string>
+
+    <string name="now_playing_title">Now playing</string>
+    <string name="now_playing_nothing">Nothing is playing. Start some music and the wallpaper will follow.</string>
+
+    <string name="help_title">Help</string>
+    <string name="help_detection_q">How does Sonora know what is playing?</string>
+    <string name="help_detection_a">Music apps share what they play with the system through a media session. With notification access, Sonora reads that session: the album art, the title and whether it is playing. Nothing leaves your device.</string>
+    <string name="help_audio_q">Why does Beat Pulse ask for audio access?</string>
+    <string name="help_audio_a">To pulse with the beat, Sonora listens to the sound your device is already playing. It never uses the microphone and never records or stores audio.</string>
+
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_project_page">Project page</string>
+    <string name="about_licences">Open-source licences</string>
+
+    <string name="licences_title">Open-source licences</string>
+    <string name="licences_back">Back</string>
+    <string name="licences_fonts">Manrope and JetBrains Mono fonts</string>
+    <string name="licences_icons">Lucide icons</string>
+    <string name="licences_libraries">AndroidX, Jetpack Compose, Kotlin, Dagger Hilt</string>
+    <string name="licences_apache">Licensed under the Apache License, Version 2.0.</string>
+
+    <string name="setup_title">Get started</string>
+    <string name="setup_intro">A few steps so Sonora can follow your music.</string>
+    <string name="setup_wallpaper">Make Sonora your wallpaper</string>
+    <string name="setup_wallpaper_action">Set wallpaper</string>
+    <string name="setup_notifications">Let Sonora see what is playing</string>
+    <string name="setup_notifications_action">Allow access</string>
+    <string name="now_playing_no_access">Sonora needs notification access to see what your music apps are playing.</string>
+    <string name="now_playing_open_music_app">Open a music app</string>
+    <string name="now_playing_unknown">Unknown</string>
+    <string name="now_playing_sentence">Now playing: %1$s by %2$s</string>
+    <string name="now_playing_playing_in">Playing in %1$s</string>
+    <string name="now_playing_paused_in">Paused in %1$s</string>
+    <string name="now_playing_open_player">Open %1$s</string>
+    <string name="detection_hint_title">Not detecting your music?</string>
+    <string name="detection_hint_body">Access is on but no music app has shown up. The system may have stopped Sonora\'s listener in the background.</string>
+    <string name="detection_hint_restart">Restart listener</string>
+    <string name="message_listener_restarted">Listener restarted. Play something to check it is back.</string>
+    <string name="chooser_title">Open your music app</string>
+    <string name="chooser_hint">Not on the list? Open your app yourself: it may still work with Sonora.</string>
+    <string name="chooser_empty_title">No music apps found</string>
+    <string name="chooser_empty_body">Install a music app, or open the one you use directly.</string>
+    <string name="chooser_open">Open</string>
+    <string name="look_title">Look</string>
+    <string name="fluid_group">Motion</string>
+    <string name="fluid_group_desc">Use your own fluid settings instead of the defaults</string>
+    <string name="fluid_scale">Fluid scale</string>
+    <string name="fluid_scale_desc">Low keeps the flow calm, high makes it swirl</string>
+    <string name="fluid_scale_calm">Calm</string>
+    <string name="fluid_scale_gentle">Gentle</string>
+    <string name="fluid_scale_lively">Lively</string>
+    <string name="fluid_scale_turbulent">Turbulent</string>
+    <string name="fluid_speed">Speed</string>
+    <string name="fluid_speed_desc">Slowest when the music is paused, fastest while it plays</string>
+    <string name="fluid_speed_paused">Speed when paused</string>
+    <string name="fluid_speed_playing">Speed while playing</string>
+    <string name="setup_audio">Let Beat Pulse hear the music</string>
+    <string name="setup_audio_action">Allow audio</string>
+    <string name="setup_audio_why">Only needed for Beat Pulse. Sonora listens to what your device plays, never the microphone.</string>
+    <string name="battery_hint_title">Keep Sonora running</string>
+    <string name="battery_hint_body">Your phone\'s maker is known to stop apps in the background, which makes the wallpaper lose track of your music. Set Sonora to "unrestricted" in the battery settings.</string>
+    <string name="battery_hint_action">Battery settings</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_loading">Working on it</string>
+    <string name="ds_step_of">Step %1$d of %2$d</string>
+    <string name="ds_done">done</string>
+    <string name="ds_to_do">to do</string>
+    <string name="ds_optional">optional</string>
+    <string name="ds_selected">selected</string>
+    <string name="ds_on">on</string>
+    <string name="ds_off">off</string>
+</resources>
