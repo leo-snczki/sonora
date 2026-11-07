@@ -99,4 +99,37 @@ class BeatListenerTest {
 
         assertTrue(listener.pulse.frame(atMillis = 5_000) > 0f)
     }
+
+    @Test
+    fun silence_before_the_visualiser_closed_does_not_count_after_it_reopens() {
+        listener.setStrength(0.5f)
+        listener.setVisible(home, true)
+        tap.onFft!!(ByteArray(1024), 44_100_000)
+        val stale = tap.onFft!!
+        listener.setVisible(home, false)
+
+        listener.pulse.frame(atMillis = 50_000)
+        stale(ByteArray(1024).apply { this[4] = 100 }, 44_100_000)
+        assertEquals(0f, listener.pulse.frame(atMillis = 60_000), "a capture after closing is ignored")
+
+        now = 60_000
+        listener.setVisible(home, true)
+        tap.onFft!!(ByteArray(1024), 44_100_000)
+        assertFalse(listener.playerSilent.value, "the count starts again")
+    }
+
+    @Test
+    fun a_visualiser_that_failed_is_not_retried_until_something_changes() {
+        tap.fails = true
+        listener.setStrength(0.5f)
+        listener.setVisible(home, true)
+        tap.fails = false
+
+        listener.setStrength(0.6f)
+        assertFalse(tap.isOpen, "no retry on every slider step")
+
+        listener.setVisible(home, false)
+        listener.setVisible(home, true)
+        assertTrue(tap.isOpen, "shown again: worth another try")
+    }
 }

@@ -36,7 +36,10 @@ object BeatBands {
  * Bands arrive on the visualiser's thread and frames on the render thread, so access is synchronised.
  */
 class BeatPulse {
-    private var strength = 0f
+    /** 0..1; 0 means no pulse at all. */
+    @get:Synchronized
+    var strength = 0f
+        private set
     private var target = 0f
     private var value = 0f
     private var lastFrameAt: Long? = null
@@ -51,7 +54,10 @@ class BeatPulse {
         target = 1.5f * bands[0] - 0.1f * bands[1] - 0.2f * bands[2] - 0.3f * bands[3]
     }
 
-    /** The pulse to add to the fluid's scale now. Call once per drawn frame. */
+    /**
+     * The pulse to add to the fluid's scale now. Every visible engine calls it once per drawn
+     * frame; the easing is exponential in time, so interleaved calls still add up to the same curve.
+     */
     @Synchronized
     fun frame(atMillis: Long): Float {
         val seconds = lastFrameAt?.let { (atMillis - it).coerceAtLeast(0) / 1000f } ?: 0f
@@ -68,6 +74,11 @@ class BeatPulse {
  */
 class SilenceWatch(private val holdMillis: Long = 30_000) {
     private var silentSince: Long? = null
+
+    /** Forget any silence so far, e.g. when nothing has been listening for a while. */
+    fun reset() {
+        silentSince = null
+    }
 
     /** Whether the Player has been silent for long enough to say so. */
     fun onBands(bands: FloatArray, playing: Boolean, atMillis: Long): Boolean {
