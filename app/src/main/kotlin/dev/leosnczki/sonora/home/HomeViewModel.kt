@@ -1,0 +1,121 @@
+package dev.leosnczki.sonora.home
+
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.leosnczki.sonora.BuildConfig
+import dev.leosnczki.sonora.core.domain.ArtId
+import dev.leosnczki.sonora.core.domain.DetectionWatch
+import dev.leosnczki.sonora.core.domain.NowPlaying
+import dev.leosnczki.sonora.core.media.NowPlayingRepository
+import dev.leosnczki.sonora.core.media.monotonicMillis
+import dev.leosnczki.sonora.feature.home.HomeMessage
+import dev.leosnczki.sonora.feature.home.HomeScreenState
+import dev.leosnczki.sonora.feature.home.NowPlayingCardState
+import dev.leosnczki.sonora.feature.home.PlayerApp
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** Builds the settings screen state from Now Playing and the device's status. */
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val repository: NowPlayingRepository,
+    private val device: DeviceStatus,
+) : ViewModel() {
+    private val detection = DetectionWatch()
+    private var art: Pair<ArtId, ImageBitmap?>? = null
+
+    private val _state = MutableStateFlow(HomeScreenState(versionName = BuildConfig.VERSION_NAME))
+    val state: StateFlow<HomeScreenState> = _state.asStateFlow()
+
+    private val _players = MutableStateFlow<List<PlayerApp>?>(null)
+
+    /** Non-null while the Player chooser is open. */
+    val players: StateFlow<List<PlayerApp>?> = _players.asStateFlow()
+
+    init {
+        viewModelScope.launch { repository.nowPlaying.collect { refreshCard() } }
+        viewModelScope.launch { repository.sessionSeen.collect { refreshCard() } }
+        // The detection hint depends on time passing, so look again every few seconds.
+        viewModelScope.launch {
+            while (true) {
+                delay(5_000)
+                refreshCard()
+            }
+        }
+    }
+
+    /** Call on resume: permissions and the wallpaper may have changed in system settings. */
+    fun onResume() {
+        val access = repository.hasAccess()
+        if (access) repository.start()
+        _state.update { it.copy(wallpaperSet = device.isSonoraTheWallpaper(), notificationAccess = access) }
+        refreshCard()
+    }
+
+    private fun refreshCard() {
+        val access = _state.value.notificationAccess
+        val now = monotonicMillis()
+        detection.update(access, repository.sessionSeen.value, now)
+        val hint = detection.showHint(now)
+        val nowPlaying = repository.nowPlaying.value
+        val card = when {
+            !access -> NowPlayingCardState.NoAccess
+            nowPlaying == null || nowPlaying.stopped -> NowPlayingCardState.Idle(showDetectionHint = hint)
+            else -> playing(nowPlaying, hint)
+        }
+        _state.update { it.copy(nowPlaying = card) }
+    }
+
+    private fun playing(nowPlaying: NowPlaying, hint: Boolean): NowPlayingCardState.Playing {
+        val id = nowPlaying.art
+        val cached = art?.takeIf { it.first == id }?.second
+        if (id != null && art?.first != id) loadArt(id)
+        return NowPlayingCardState.Playing(
+            title = nowPlaying.track?.title,
+            artist = nowPlaying.track?.artist,
+            album = nowPlaying.track?.album,
+            playerName = device.appName(nowPlaying.player),
+            art = cached,
+            paused = !nowPlaying.playing,
+            showDetectionHint = hint,
+        )
+    }
+
+    private fun loadArt(id: ArtId) {
+        art = id to null
+        viewModelScope.launch {
+            val bitmap = withContext(Dispatchers.Default) { repository.art(id)?.asImageBitmap() }
+            if (art?.first == id) {
+                art = id to bitmap
+                refreshCard()
+            }
+        }
+    }
+
+    fun nowPlayingPlayer(): String? = repository.nowPlaying.value?.player
+
+    fun restartListener() {
+        repository.restartListener()
+        _state.update { it.copy(message = HomeMessage.ListenerRestarted) }
+    }
+
+    fun messageShown() = _state.update { it.copy(message = null) }
+
+    fun openPlayerChooser() {
+        viewModelScope.launch { _players.value = withContext(Dispatchers.Default) { device.installedPlayers() } }
+    }
+
+    fun closePlayerChooser() {
+        _players.value = null
+    }
+}

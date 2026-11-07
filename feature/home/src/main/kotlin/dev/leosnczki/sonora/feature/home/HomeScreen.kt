@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,22 +25,32 @@ import dev.leosnczki.sonora.core.designsystem.SonoraSpace
 import dev.leosnczki.sonora.core.designsystem.SonoraTheme
 import dev.leosnczki.sonora.core.designsystem.component.PageScrim
 import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
+import dev.leosnczki.sonora.core.designsystem.component.SonoraSnackbarHost
 
 /** Everything the settings screen shows. Filled by [HomeViewModel] in the app. */
 data class HomeScreenState(
     val versionName: String,
     val wallpaperSet: Boolean = false,
     val notificationAccess: Boolean = false,
+    val nowPlaying: NowPlayingCardState = NowPlayingCardState.NoAccess,
+    val message: HomeMessage? = null,
 ) {
     companion object {
         val Preview = HomeScreenState(versionName = "0.1.0")
     }
 }
 
+/** One-off confirmations, shown as a snackbar. */
+enum class HomeMessage { ListenerRestarted }
+
 /** Everything the settings screen can ask for. The activity turns these into intents. */
 interface HomeActions {
     fun setWallpaper() {}
     fun allowNotificationAccess() {}
+    fun openPlayerChooser() {}
+    fun openPlayer() {}
+    fun restartListener() {}
+    fun messageShown() {}
     fun openProjectPage() {}
     fun openLicences() {}
 
@@ -66,7 +79,7 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                     SonoraHeader(stringResource(R.string.home_title), stringResource(R.string.home_tagline))
                     val primary: List<@Composable () -> Unit> = listOfNotNull(
                         if (!state.wallpaperSet || !state.notificationAccess) ({ SetupCard(state, actions) }) else null,
-                        { NowPlayingCard() },
+                        { NowPlayingCard(state.nowPlaying, actions) },
                     )
                     val secondary: List<@Composable () -> Unit> = listOf(
                         { HelpCard() },
@@ -82,8 +95,32 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                     }
                 }
             }
+            MessageSnackbar(
+                state.message,
+                actions,
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(SonoraSpace.Md),
+            )
         }
     }
+}
+
+@Composable
+private fun MessageSnackbar(message: HomeMessage?, actions: HomeActions, modifier: Modifier = Modifier) {
+    val host = remember { SnackbarHostState() }
+    val text = when (message) {
+        HomeMessage.ListenerRestarted -> stringResource(R.string.message_listener_restarted)
+        null -> null
+    }
+    LaunchedEffect(message) {
+        if (text != null) {
+            host.showSnackbar(text)
+            actions.messageShown()
+        }
+    }
+    SonoraSnackbarHost(host, modifier)
 }
 
 @Composable

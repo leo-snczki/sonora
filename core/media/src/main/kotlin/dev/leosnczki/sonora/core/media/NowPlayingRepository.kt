@@ -2,6 +2,8 @@ package dev.leosnczki.sonora.core.media
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
+import android.service.notification.NotificationListenerService
 import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaController
@@ -51,6 +53,11 @@ class NowPlayingRepository @Inject constructor(
     private val _nowPlaying = MutableStateFlow<NowPlaying?>(null)
     val nowPlaying: StateFlow<NowPlaying?> = _nowPlaying.asStateFlow()
 
+    private val _sessionSeen = MutableStateFlow(false)
+
+    /** True once any Media Session has been seen since the app started. */
+    val sessionSeen: StateFlow<Boolean> = _sessionSeen.asStateFlow()
+
     /** True once the user granted notification access. */
     fun hasAccess(): Boolean = NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
 
@@ -75,6 +82,17 @@ class NowPlayingRepository @Inject constructor(
             }
             sync()
         }
+    }
+
+    /**
+     * Asks the system to reconnect the listener, for when an aggressive battery manager killed it.
+     * Toggling the component forces a fresh bind even when the system thinks it is still bound.
+     */
+    fun restartListener() {
+        val pm = context.packageManager
+        pm.setComponentEnabledSetting(listenerComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+        pm.setComponentEnabledSetting(listenerComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+        NotificationListenerService.requestRebind(listenerComponent)
     }
 
     fun stop() {
@@ -125,6 +143,7 @@ class NowPlayingRepository @Inject constructor(
 
     private fun refresh() {
         val snapshots = controllers.values.map { it.snapshot() }
+        if (snapshots.isNotEmpty()) _sessionSeen.value = true
         val now = monotonicMillis()
         tracker.update(snapshots, now)
         publish(now)

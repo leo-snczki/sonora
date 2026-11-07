@@ -12,7 +12,7 @@ Backdrop when there is no Album Art,wallpaper,must,yes,no,S02 idle
 Setup card (set wallpaper / notification access / audio optional),onboarding,must,yes,no,S01; card hides when all steps done
 Open the system wallpaper picker straight on Sonora,onboarding,must,no,yes,ACTION_CHANGE_LIVE_WALLPAPER
 Wallpaper metadata (label author description thumbnail settings activity),onboarding,must,yes,yes,S02
-Now Playing card (no access / nothing playing / playing),now playing,must,yes,no,S01
+Now Playing card (no access / nothing playing / playing),now playing,must,yes,yes,S01
 Fluid group with override toggle (scale and speed min-max),settings,must,yes,no,group toggle like the original; off = defaults
 Speed drops to min when music pauses,wallpaper,must,yes,yes,
 Settings persisted and applied live,settings,must,yes,no,DataStore
@@ -28,9 +28,9 @@ Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,no,S04; built-in = 
 Save the current Album Art as a Backdrop,backdrops,should,yes,no,S04 Mine
 Upload an image as a Backdrop with crop,backdrops,should,yes,no,S04 Mine + S05
 Misc group: brightness,settings,should,yes,no,-1..1
-Restart listener and help card,help,should,yes,partial,S01 help card done; Restart listener comes with #7
+Restart listener and help card,help,should,yes,yes,S01 help card + Restart listener in the detection hint
 Battery optimisation hint on known OEMs,help,should,no,no,Xiaomi Samsung Huawei Oppo/OnePlus/Realme Vivo; grilling Q19
-Open a Player chooser,now playing,should,yes,no,S06
+Open a Player chooser,now playing,should,yes,yes,S06
 About card with version and open-source licences,about,should,yes,yes,fonts OFL + Lucide ISC need notices; grilling Q17
 Performance mode,settings,could,yes,no,
 Adaptive launcher colour scheme (WallpaperColors),settings,could,yes,no,

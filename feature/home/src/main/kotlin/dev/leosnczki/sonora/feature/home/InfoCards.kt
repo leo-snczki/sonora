@@ -16,13 +16,6 @@ import dev.leosnczki.sonora.core.designsystem.component.SonoraButton
 import dev.leosnczki.sonora.core.designsystem.R as DsR
 
 @Composable
-internal fun NowPlayingCard() {
-    SectionCard(stringResource(R.string.now_playing_title)) {
-        Text(stringResource(R.string.now_playing_nothing), style = SonoraType.Body, color = SonoraColors.TextMuted)
-    }
-}
-
-@Composable
 private fun Question(question: String, answer: String) {
     Column(verticalArrangement = Arrangement.spacedBy(SonoraSpace.Xxs)) {
         Text(question, style = SonoraType.BodyStrong, color = SonoraColors.Text)

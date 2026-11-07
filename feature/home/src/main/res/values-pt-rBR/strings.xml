@@ -4,7 +4,7 @@
     <string name="home_tagline">Sua música pintada no papel de parede</string>
 
     <string name="now_playing_title">Tocando agora</string>
-    <string name="now_playing_nothing">Nada tocando ainda.</string>
+    <string name="now_playing_nothing">Nada tocando. Coloque uma música e o papel de parede acompanha.</string>
 
     <string name="help_title">Ajuda</string>
     <string name="help_detection_q">Como o Sonora sabe o que está tocando?</string>
@@ -30,4 +30,20 @@
     <string name="setup_wallpaper_action">Definir papel de parede</string>
     <string name="setup_notifications">Deixar o Sonora ver o que está tocando</string>
     <string name="setup_notifications_action">Permitir acesso</string>
+    <string name="now_playing_no_access">O Sonora precisa de acesso às notificações para ver o que os seus apps de música estão tocando.</string>
+    <string name="now_playing_open_music_app">Abrir um app de música</string>
+    <string name="now_playing_unknown">Desconhecido</string>
+    <string name="now_playing_sentence">Tocando agora: %1$s, de %2$s</string>
+    <string name="now_playing_playing_in">Tocando no %1$s</string>
+    <string name="now_playing_paused_in">Pausado no %1$s</string>
+    <string name="now_playing_open_player">Abrir %1$s</string>
+    <string name="detection_hint_title">Não está detectando a sua música?</string>
+    <string name="detection_hint_body">O acesso está ligado, mas nenhum app de música apareceu. O sistema pode ter parado o serviço do Sonora em segundo plano.</string>
+    <string name="detection_hint_restart">Reiniciar serviço</string>
+    <string name="message_listener_restarted">Serviço reiniciado. Toque algo para conferir se voltou.</string>
+    <string name="chooser_title">Abra o seu app de música</string>
+    <string name="chooser_hint">Não está na lista? Abra o app você mesmo: ele pode funcionar com o Sonora mesmo assim.</string>
+    <string name="chooser_empty_title">Nenhum app de música encontrado</string>
+    <string name="chooser_empty_body">Instale um app de música ou abra direto o que você usa.</string>
+    <string name="chooser_open">Abrir</string>
 </resources>
