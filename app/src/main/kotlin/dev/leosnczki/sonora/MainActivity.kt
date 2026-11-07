@@ -12,6 +12,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
@@ -25,6 +26,7 @@ import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.media.NowPlayingListenerService
 import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryActions
 import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryScreen
+import dev.leosnczki.sonora.feature.backdrops.CropScreen
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
 import dev.leosnczki.sonora.feature.home.LicencesScreen
@@ -58,7 +60,12 @@ class MainActivity : ComponentActivity() {
         override fun back() {
             showBackdrops = false
         }
+
+        override fun uploadImage() = pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
+
+    /** The system photo picker: no storage permission needed. */
+    private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(backdrops::picked) }
     private val requestAudio = registerForActivityResult(ActivityResultContracts.RequestPermission()) { viewModel.onResume() }
     private var showLicences by mutableStateOf(false)
 
@@ -150,8 +157,11 @@ class MainActivity : ComponentActivity() {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val players by viewModel.players.collectAsStateWithLifecycle()
             val chooser = players
+            val picked by backdrops.cropping.collectAsStateWithLifecycle()
+            val cropping = picked
             when {
                 showLicences -> LicencesScreen(onBack = { showLicences = false })
+                cropping != null -> CropScreen(cropping.image, onUse = backdrops::useCrop, onCancel = backdrops::cancelCrop)
                 showBackdrops -> {
                     val library by backdrops.state.collectAsStateWithLifecycle()
                     BackdropLibraryScreen(library, backdropActions)

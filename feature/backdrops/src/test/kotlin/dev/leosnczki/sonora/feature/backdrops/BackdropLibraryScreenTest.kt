@@ -31,6 +31,7 @@ class BackdropLibraryScreenTest {
         override fun saveAlbumArt() { calls += "save" }
         override fun delete(id: BackdropId) { calls += "delete=${id.value}" }
         override fun back() { calls += "back" }
+        override fun uploadImage() { calls += "upload" }
     }
 
     private val mine = MineBackdrop(BackdropId("u1"), "Blue Album", image = null)
@@ -63,6 +64,15 @@ class BackdropLibraryScreenTest {
         compose.onNodeWithText("Save current Album Art", ignoreCase = true).performClick()
 
         assertEquals(listOf("save"), calls)
+    }
+
+    @Test
+    fun mine_can_upload_an_image_whether_or_not_it_is_empty() {
+        show(BackdropLibraryState(chosen = Backdrops.Default))
+        compose.onNodeWithText("Mine", ignoreCase = true).performClick()
+        compose.onNodeWithText("Upload image", ignoreCase = true).performScrollTo().performClick()
+
+        assertEquals(listOf("upload"), calls)
     }
 
     @Test

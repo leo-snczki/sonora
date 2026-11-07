@@ -65,6 +65,9 @@ interface BackdropLibraryActions {
     fun saveAlbumArt()
     fun delete(id: BackdropId)
     fun back()
+
+    /** Pick an image with the system photo picker (no storage permission), then crop it (S05). */
+    fun uploadImage()
 }
 
 /** S04: pick the Backdrop from the built-in ones or the user's own (Mine). */
@@ -126,8 +129,11 @@ fun BackdropLibraryScreen(state: BackdropLibraryState, actions: BackdropLibraryA
 @Composable
 private fun Mine(state: BackdropLibraryState, actions: BackdropLibraryActions, onDelete: (BackdropId) -> Unit) {
     val save = @Composable {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            SonoraButton(stringResource(R.string.library_save_album_art), actions::saveAlbumArt, enabled = state.canSaveAlbumArt)
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SonoraSpace.Xs)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SonoraSpace.Xs)) {
+                SonoraButton(stringResource(R.string.library_save_album_art), actions::saveAlbumArt, enabled = state.canSaveAlbumArt)
+                SonoraButton(stringResource(R.string.library_upload), actions::uploadImage, variant = ButtonVariant.Secondary)
+            }
             if (!state.canSaveAlbumArt) {
                 Text(stringResource(R.string.library_save_unavailable), style = SonoraType.Caption, color = SonoraColors.TextMuted)
             }
