@@ -37,8 +37,9 @@ class SceneDirectorTest {
     }
 
     @Test
-    fun motion_runs_at_maximum_speed_while_playing_and_eases_to_minimum_when_paused() {
-        val fluid = FluidSettings.Default
+    fun cover_runs_at_maximum_speed_while_playing_and_eases_to_minimum_when_paused() {
+        val fluid = FluidSettings.defaultsFor(FluidStyle.Cover)
+        director.setFluid(fluid)
         director.onNowPlaying(playing("a"), atMillis = 0)
         assertEquals(fluid.speedMax, director.frame(atMillis = 5_000).speed, 0.001f)
 
@@ -109,5 +110,45 @@ class SceneDirectorTest {
         assertEquals(ArtId("b"), frame.previousArt)
         assertEquals(ArtId("c"), frame.currentArt)
         assertEquals(0f, frame.crossfade, 0.01f)
+    }
+
+    @Test
+    fun the_scene_is_drawn_in_the_chosen_fluid_style() {
+        director.setFluid(FluidSettings.defaultsFor(FluidStyle.Cover))
+
+        assertEquals(FluidStyle.Cover, director.frame(atMillis = 0).style)
+    }
+
+    /** Total distance Flow's colours may travel over one second, drawn at [fps]. */
+    private fun flowTravelOverOneSecond(fps: Int): Float {
+        val director = SceneDirector()
+        director.flowStep(atMillis = 0)
+        return (1..fps).sumOf { director.flowStep(atMillis = it * 1000L / fps).toDouble() }.toFloat()
+    }
+
+    @Test
+    fun flow_colours_travel_0_6_per_second_whatever_the_frame_rate() {
+        assertEquals(0.6f, flowTravelOverOneSecond(fps = 60), 0.001f)
+        assertEquals(0.6f, flowTravelOverOneSecond(fps = 120), 0.001f)
+    }
+
+    @Test
+    fun the_first_flow_frame_snaps_to_the_image() {
+        assertTrue(SceneDirector().flowStep(atMillis = 5_000) >= SceneDirector.FLOW_SNAP)
+    }
+
+    /** Flow's speed one second after the music starts, sampled at [fps]. */
+    private fun flowSpeedOneSecondAfterPlay(fps: Int): Float {
+        val director = SceneDirector(FluidSettings.defaultsFor(FluidStyle.Flow)).apply { setVisible(true) }
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        return (0..fps).map { director.frame(atMillis = it * 1000L / fps).speed }.last()
+    }
+
+    @Test
+    fun flow_speed_closes_in_on_its_target_like_the_original_whatever_the_frame_rate() {
+        // The original moves 1% of the way each frame at 60 fps: after a second, 0.99^60 ≈ 0.547
+        // of the gap from 0.05 to 0.5 is left.
+        assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 60), 0.002f)
+        assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 120), 0.002f)
     }
 }

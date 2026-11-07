@@ -3,6 +3,8 @@ package dev.leosnczki.sonora.wallpaper
 import android.graphics.Bitmap
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.NowPlaying
+import dev.leosnczki.sonora.core.domain.SceneDirector
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -18,6 +20,16 @@ class NowPlayingSceneTest {
     private val scene = NowPlayingScene(artFor = { available[it] }, fallbackImage = { placeholder })
 
     private fun playing(art: String) = NowPlaying("player", null, ArtId(art), playing = true, stopped = false)
+
+    @Test
+    fun flow_lands_on_the_first_image_then_walks_by_the_time_between_drawn_frames() {
+        assertEquals(SceneDirector.FLOW_SNAP, scene.frameAt(nanos = 5_000_000_000L).flowStep)
+        // Frame-rate and image checks in between must not eat into the next step.
+        scene.targetFps(nanos = 5_008_000_000L)
+        scene.takeImages(nanos = 5_008_000_000L)
+
+        assertEquals(0.6f * 0.016f, scene.frameAt(nanos = 5_016_000_000L).flowStep, 0.0001f)
+    }
 
     @Test
     fun the_first_frame_gets_images_to_draw() {

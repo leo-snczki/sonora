@@ -25,6 +25,18 @@ _Avoid_: artwork, cover, album image
 
 ### Wallpaper
 
+**Fluid Style**:
+How the wallpaper turns its image into the fluid, chosen by the user: Flow or Cover.
+_Avoid_: mode, effect (that is Blur or Fluted Glass), theme
+
+**Flow**:
+The Fluid Style in which the image dissolves into a flowing fluid of its own colours; the default, ported from the original (ADR-0003).
+_Avoid_: palette, colour extraction (no colours are extracted)
+
+**Cover**:
+The Fluid Style in which the image stays recognisable, distorted by the fluid. The name of the style, not a synonym of Album Art.
+_Avoid_: classic, warp
+
 **Backdrop**:
 The image the wallpaper shows when there is no Album Art to show.
 _Avoid_: default palette, default color, palette, texture

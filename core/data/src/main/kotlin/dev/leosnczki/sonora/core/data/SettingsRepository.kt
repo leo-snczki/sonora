@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.map
 class SettingsRepository @Inject constructor(private val store: DataStore<Preferences>) {
 
     val settings: Flow<SonoraSettings> = store.data.map { it.toSettings() }.distinctUntilChanged()
+
+    suspend fun setFluidStyle(style: FluidStyle) = write { it[FLUID_STYLE] = style.name }
 
     suspend fun setFluidOverride(enabled: Boolean) = write { it[FLUID_OVERRIDE] = enabled }
 
@@ -38,6 +42,8 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
     private fun Preferences.toSettings(): SonoraSettings {
         val defaults = SonoraSettings.Default
         return SonoraSettings(
+            // Stored by name; an unknown name (a style since removed) falls back to the default.
+            fluidStyle = FluidStyle.entries.firstOrNull { it.name == this[FLUID_STYLE] } ?: defaults.fluidStyle,
             fluidOverride = this[FLUID_OVERRIDE] ?: defaults.fluidOverride,
             fluidScale = this[FLUID_SCALE] ?: defaults.fluidScale,
             speedMin = this[SPEED_MIN] ?: defaults.speedMin,
@@ -47,6 +53,7 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
     }
 
     private companion object {
+        val FLUID_STYLE = stringPreferencesKey("fluid_style")
         val FLUID_OVERRIDE = booleanPreferencesKey("fluid_override")
         val FLUID_SCALE = floatPreferencesKey("fluid_scale")
         val SPEED_MIN = floatPreferencesKey("speed_min")

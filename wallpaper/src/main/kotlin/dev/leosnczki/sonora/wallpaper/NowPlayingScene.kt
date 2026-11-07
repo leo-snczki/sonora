@@ -48,10 +48,19 @@ class NowPlayingScene(
         return SceneImages(current ?: fallbackImage(), previous ?: fallbackImage())
     }
 
+    /** Called once per drawn frame, which is what [SceneDirector.flowStep] counts on. */
     @Synchronized
     override fun frameAt(nanos: Long): SceneFrame {
-        val state = director.frame(nanos / 1_000_000)
-        return SceneFrame(phase = state.phase, crossfade = state.crossfade, scale = state.scale, brightness = 0f)
+        val millis = nanos / 1_000_000
+        val state = director.frame(millis)
+        return SceneFrame(
+            style = state.style,
+            phase = state.phase,
+            crossfade = state.crossfade,
+            scale = state.scale,
+            brightness = 0f,
+            flowStep = director.flowStep(millis),
+        )
     }
 
     @Synchronized

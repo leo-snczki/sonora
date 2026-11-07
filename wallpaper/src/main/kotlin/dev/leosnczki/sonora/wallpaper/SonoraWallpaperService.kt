@@ -30,7 +30,7 @@ class SonoraWallpaperService : WallpaperService() {
     private inner class SonoraEngine : Engine() {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         private val scene = NowPlayingScene(artFor = nowPlaying::art, fallbackImage = { placeholder })
-        private val loop = RenderLoop(scene)
+        private val loop = RenderLoop(scene, resources.displayMetrics.density)
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
