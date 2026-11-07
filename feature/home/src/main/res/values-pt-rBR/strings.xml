@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Sonora</string>
+    <string name="home_tagline">Sua música pintada no papel de parede</string>
+
+    <string name="now_playing_title">Tocando agora</string>
+    <string name="now_playing_nothing">Nada tocando. Coloque uma música e o papel de parede acompanha.</string>
+
+    <string name="help_title">Ajuda</string>
+    <string name="help_detection_q">Como o Sonora sabe o que está tocando?</string>
+    <string name="help_detection_a">Os apps de música informam ao sistema o que estão tocando por meio de uma sessão de mídia. Com o acesso às notificações, o Sonora lê essa sessão: a capa do álbum, o título e se está tocando. Nada sai do seu aparelho.</string>
+    <string name="help_audio_q">Por que o Beat Pulse pede acesso ao áudio?</string>
+    <string name="help_audio_a">Para pulsar com a batida, o Sonora escuta o som que o aparelho já está tocando. Ele nunca usa o microfone e nunca grava nem guarda áudio.</string>
+
+    <string name="about_title">Sobre</string>
+    <string name="about_version">Versão %1$s</string>
+    <string name="about_project_page">Página do projeto</string>
+    <string name="about_licences">Licenças open source</string>
+
+    <string name="licences_title">Licenças open source</string>
+    <string name="licences_back">Voltar</string>
+    <string name="licences_fonts">Fontes Manrope e JetBrains Mono</string>
+    <string name="licences_icons">Ícones Lucide</string>
+    <string name="licences_libraries">AndroidX, Jetpack Compose, Kotlin, Dagger Hilt</string>
+    <string name="licences_apache">Licenciados sob a Apache License, Versão 2.0.</string>
+
+    <string name="setup_title">Primeiros passos</string>
+    <string name="setup_intro">Alguns passos para o Sonora acompanhar a sua música.</string>
+    <string name="setup_wallpaper">Usar o Sonora como papel de parede</string>
+    <string name="setup_wallpaper_action">Definir papel de parede</string>
+    <string name="setup_notifications">Deixar o Sonora ver o que está tocando</string>
+    <string name="setup_notifications_action">Permitir acesso</string>
+    <string name="now_playing_no_access">O Sonora precisa de acesso às notificações para ver o que os seus apps de música estão tocando.</string>
+    <string name="now_playing_open_music_app">Abrir um app de música</string>
+    <string name="now_playing_unknown">Desconhecido</string>
+    <string name="now_playing_sentence">Tocando agora: %1$s, de %2$s</string>
+    <string name="now_playing_playing_in">Tocando no %1$s</string>
+    <string name="now_playing_paused_in">Pausado no %1$s</string>
+    <string name="now_playing_open_player">Abrir %1$s</string>
+    <string name="detection_hint_title">Não está detectando a sua música?</string>
+    <string name="detection_hint_body">O acesso está ligado, mas nenhum app de música apareceu. O sistema pode ter parado o serviço do Sonora em segundo plano.</string>
+    <string name="detection_hint_restart">Reiniciar serviço</string>
+    <string name="message_listener_restarted">Serviço reiniciado. Toque algo para conferir se voltou.</string>
+    <string name="chooser_title">Abra o seu app de música</string>
+    <string name="chooser_hint">Não está na lista? Abra o app você mesmo: ele pode funcionar com o Sonora mesmo assim.</string>
+    <string name="chooser_empty_title">Nenhum app de música encontrado</string>
+    <string name="chooser_empty_body">Instale um app de música ou abra direto o que você usa.</string>
+    <string name="chooser_open">Abrir</string>
+    <string name="look_title">Aparência</string>
+    <string name="fluid_group">Movimento</string>
+    <string name="fluid_group_desc">Usar seus próprios ajustes do fluido em vez dos padrões</string>
+    <string name="fluid_scale">Escala do fluido</string>
+    <string name="fluid_scale_desc">Baixa deixa o fluxo calmo, alta faz ele girar</string>
+    <string name="fluid_scale_calm">Calmo</string>
+    <string name="fluid_scale_gentle">Suave</string>
+    <string name="fluid_scale_lively">Animado</string>
+    <string name="fluid_scale_turbulent">Turbulento</string>
+    <string name="fluid_speed">Velocidade</string>
+    <string name="fluid_speed_desc">Mais lenta com a música pausada, mais rápida enquanto toca</string>
+    <string name="fluid_speed_paused">Velocidade pausado</string>
+    <string name="fluid_speed_playing">Velocidade tocando</string>
+    <string name="setup_audio">Deixar o Beat Pulse ouvir a música</string>
+    <string name="setup_audio_action">Permitir áudio</string>
+    <string name="setup_audio_why">Só é necessário para o Beat Pulse. O Sonora escuta o que o aparelho toca, nunca o microfone.</string>
+    <string name="battery_hint_title">Manter o Sonora ativo</string>
+    <string name="battery_hint_body">O fabricante do seu aparelho costuma parar apps em segundo plano, e aí o papel de parede perde a música. Deixe o Sonora como "sem restrições" nas configurações de bateria.</string>
+    <string name="battery_hint_action">Configurações de bateria</string>
+</resources>

@@ -18,6 +18,8 @@
 *.zip
 *.tar.gz
 *.rar
+# ...except the Gradle wrapper, which CI needs
+!gradle/wrapper/gradle-wrapper.jar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -31,3 +33,18 @@ replay_pid*
 
 # Android packages
 *.apk
+
+# Decompiled APKs and other scratch output
+work/
+
+# APK signing key and its password
+*.jks
+*.pass
+
+# Gradle and Android Studio
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.kotlin/
