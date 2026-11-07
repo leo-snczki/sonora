@@ -134,6 +134,33 @@ class SceneRendererSmokeTest {
         assertTrue(maxDistanceFrom(Color.rgb(237, 0, 18), 640, 400) <= 3, "one step from red towards blue")
     }
 
+    /** Top half red, bottom half blue, as an Android bitmap (row 0 is the top). */
+    private fun redTopBlueBottom() = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
+        for (y in 0 until 64) for (x in 0 until 64) setPixel(x, y, if (y < 32) Color.RED else Color.BLUE)
+    }
+
+    /** Average red minus average blue over rows [from] until [to], counted from the top of the screen. */
+    private fun redness(width: Int, height: Int, from: Int, to: Int): Float {
+        val buffer = readPixels(width, height)
+        var sum = 0L
+        for (row in from until to) {
+            val glRow = height - 1 - row // glReadPixels starts at the bottom
+            for (x in 0 until width) {
+                val i = (glRow * width + x) * 4
+                sum += (buffer.get(i).toInt() and 0xFF) - (buffer.get(i + 2).toInt() and 0xFF)
+            }
+        }
+        return sum.toFloat() / ((to - from) * width)
+    }
+
+    @Test
+    fun cover_shows_the_top_of_the_album_art_at_the_top_of_the_screen() {
+        renderAt(256, 256, style = FluidStyle.Cover, image = redTopBlueBottom())
+
+        assertTrue(redness(256, 256, from = 0, to = 26) > 100, "red on top")
+        assertTrue(redness(256, 256, from = 230, to = 256) < -100, "blue at the bottom")
+    }
+
     private companion object {
         /** The reference tablet's display density (340 dpi). */
         const val TABLET_DENSITY = 340f / 160f
