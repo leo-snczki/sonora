@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.media.NowPlayingListenerService
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
@@ -85,6 +86,14 @@ class MainActivity : ComponentActivity() {
         override fun setCoverMirrorHorizontal(enabled: Boolean) = viewModel.setCoverMirrorHorizontal(enabled)
 
         override fun setFluidOverride(enabled: Boolean) = viewModel.setFluidOverride(enabled)
+
+        override fun setGraphicsOverride(enabled: Boolean) = viewModel.setGraphicsOverride(enabled)
+
+        override fun setGraphicsEffect(effect: GraphicsEffect) = viewModel.setGraphicsEffect(effect)
+
+        override fun setMiscOverride(enabled: Boolean) = viewModel.setMiscOverride(enabled)
+
+        override fun setBrightness(brightness: Float) = viewModel.setBrightness(brightness)
 
         override fun setFluidScale(scale: Float) = viewModel.setFluidScale(scale)
 

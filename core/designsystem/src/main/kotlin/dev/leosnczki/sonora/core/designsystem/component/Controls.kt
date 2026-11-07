@@ -7,12 +7,14 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -183,6 +185,7 @@ private fun SliderHeader(label: String, valueText: String, supporting: String?) 
 
 /**
  * [describe] turns a value into words ("Calm", "+20%"): shown next to the label and read by TalkBack.
+ * [centreTick] marks the middle of the track, for sliders centred on a neutral value.
  */
 @Composable
 fun LabeledSlider(
@@ -194,6 +197,7 @@ fun LabeledSlider(
     supporting: String? = null,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
+    centreTick: Boolean = false,
 ) {
     // While dragging, the thumb follows the finger, not the (slower) persisted value.
     var dragging by remember { mutableStateOf<Float?>(null) }
@@ -201,21 +205,26 @@ fun LabeledSlider(
     val description = describe(shown)
     Column(modifier.fillMaxWidth()) {
         SliderHeader(label, description, supporting)
-        Slider(
-            value = shown,
-            onValueChange = {
-                dragging = it
-                onValueChange(it)
-            },
-            onValueChangeFinished = { dragging = null },
-            valueRange = valueRange,
-            steps = steps,
-            colors = sliderColors,
-            modifier = Modifier.semantics {
-                contentDescription = label
-                stateDescription = description
-            },
-        )
+        Box(contentAlignment = Alignment.Center) {
+            if (centreTick) {
+                Box(Modifier.size(width = SonoraSize.StrokeInput, height = SonoraSpace.Md).background(SonoraColors.Track))
+            }
+            Slider(
+                value = shown,
+                onValueChange = {
+                    dragging = it
+                    onValueChange(it)
+                },
+                onValueChangeFinished = { dragging = null },
+                valueRange = valueRange,
+                steps = steps,
+                colors = sliderColors,
+                modifier = Modifier.semantics {
+                    contentDescription = label
+                    stateDescription = description
+                },
+            )
+        }
     }
 }
 

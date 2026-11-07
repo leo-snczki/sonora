@@ -27,6 +27,7 @@ import dev.leosnczki.sonora.core.designsystem.component.PageScrim
 import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
 import dev.leosnczki.sonora.core.designsystem.component.SonoraSnackbarHost
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.domain.SetupStatus
 import dev.leosnczki.sonora.core.domain.SetupStepState
 import dev.leosnczki.sonora.core.domain.SonoraSettings
@@ -69,6 +70,10 @@ interface HomeActions {
     fun setFluidOverride(enabled: Boolean) {}
     fun setFluidScale(scale: Float) {}
     fun setSpeedRange(min: Float, max: Float) {}
+    fun setGraphicsOverride(enabled: Boolean) {}
+    fun setGraphicsEffect(effect: GraphicsEffect) {}
+    fun setMiscOverride(enabled: Boolean) {}
+    fun setBrightness(brightness: Float) {}
     fun openProjectPage() {}
     fun openLicences() {}
 

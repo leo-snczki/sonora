@@ -6,6 +6,7 @@ import android.opengl.GLES30
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
@@ -39,13 +40,17 @@ class SceneRendererSmokeTest {
         style: FluidStyle = FluidStyle.Cover,
         image: Bitmap = TestImage.create(128),
         orientation: CoverOrientation = CoverOrientation.Upright,
+        effect: GraphicsEffect = GraphicsEffect.Blur,
+        brightness: Float = 0f,
     ) {
         egl.releaseSurface(surface)
         surface = egl.createOffscreenSurface(width, height)
         egl.makeCurrent(surface)
         renderer.setImages(current = image, previous = null)
         renderer.resize(width, height, density = TABLET_DENSITY)
-        renderer.draw(SceneFrame.Still.copy(phase = phase, style = style, orientation = orientation))
+        renderer.draw(
+            SceneFrame.Still.copy(phase = phase, style = style, orientation = orientation, effect = effect, brightness = brightness),
+        )
     }
 
     private fun readPixels(width: Int, height: Int): ByteBuffer {
@@ -180,6 +185,56 @@ class SceneRendererSmokeTest {
         renderAt(256, 256, image = redLeftBlueRight, orientation = CoverOrientation(flipVertical = false, mirrorHorizontal = true))
         assertTrue(redness(256, 256, columns = 0 until 26) < -100, "mirrored: blue on the left")
         assertTrue(redness(256, 256, columns = 230 until 256) > 100, "mirrored: red on the right")
+    }
+
+    private fun solid(color: Int) = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply { eraseColor(color) }
+
+    /** Average of the red channel over a band of rows, counted from the top of the screen. */
+    private fun averageRed(width: Int, height: Int, rows: IntRange): Float {
+        val buffer = readPixels(width, height)
+        var sum = 0L
+        for (row in rows) for (x in 0 until width) sum += buffer.get(((height - 1 - row) * width + x) * 4).toInt() and 0xFF
+        return sum.toFloat() / (rows.count() * width)
+    }
+
+    @Test
+    fun fluted_glass_covers_every_pixel_in_both_styles() {
+        renderAt(2944, 1840, phase = 2f, style = FluidStyle.Flow, effect = GraphicsEffect.FlutedGlass)
+        assertEquals(0, blackPixels(2944, 1840))
+        renderAt(1840, 2944, phase = 2f, style = FluidStyle.Cover, effect = GraphicsEffect.FlutedGlass)
+        assertEquals(0, blackPixels(1840, 2944))
+    }
+
+    @Test
+    fun fluted_glass_darkens_the_top_of_the_screen_like_the_original() {
+        val grey = Color.rgb(128, 128, 128)
+        renderAt(640, 400, style = FluidStyle.Flow, image = solid(grey), effect = GraphicsEffect.FlutedGlass)
+
+        // The original fades the top fifth towards black, by half at the very top.
+        val top = averageRed(640, 400, rows = 0 until 4)
+        val middle = averageRed(640, 400, rows = 196 until 204)
+        assertTrue(top < middle - 40, "top $top, middle $middle")
+    }
+
+    @Test
+    fun flow_brightness_multiplies_like_the_original() {
+        val grey = Color.rgb(128, 128, 128)
+
+        // ×(1 + 0.05·b) in each of the eight pre-blur passes and in the final tap: 1.05⁹ ≈ 1.551, 0.95⁹ ≈ 0.630.
+        renderAt(640, 400, style = FluidStyle.Flow, image = solid(grey), brightness = 1f)
+        assertTrue(maxDistanceFrom(Color.rgb(199, 199, 199), 640, 400) <= 3, "brighter")
+        renderAt(640, 400, style = FluidStyle.Flow, image = solid(grey), brightness = -1f)
+        assertTrue(maxDistanceFrom(Color.rgb(81, 81, 81), 640, 400) <= 3, "darker")
+    }
+
+    @Test
+    fun cover_brightness_dims_and_lifts_the_image() {
+        val grey = Color.rgb(128, 128, 128)
+
+        renderAt(256, 256, image = solid(grey), brightness = -1f)
+        assertTrue(averageRed(256, 256, rows = 0 until 256) < 40, "dimmed")
+        renderAt(256, 256, image = solid(grey), brightness = 1f)
+        assertTrue(averageRed(256, 256, rows = 0 until 256) > 180, "lifted")
     }
 
     private companion object {
