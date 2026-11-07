@@ -32,6 +32,13 @@ class NowPlayingSceneTest {
     }
 
     @Test
+    fun each_frame_carries_the_beat_pulse() {
+        val pulsing = NowPlayingScene(artFor = { null }, fallbackImage = { placeholder }, pulseAt = { 0.25f })
+
+        assertEquals(0.25f, pulsing.frameAt(nanos = 5_000_000_000L).pulse)
+    }
+
+    @Test
     fun the_first_frame_gets_images_to_draw() {
         assertNotNull(scene.takeImages(nanos = 5_000_000_000L))
     }

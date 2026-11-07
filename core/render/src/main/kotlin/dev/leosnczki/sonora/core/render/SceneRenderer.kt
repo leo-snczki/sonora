@@ -26,9 +26,21 @@ data class SceneFrame(
     val brightness: Float,
     /** How far in RGB Flow's colours may move towards a new image this frame. */
     val flowStep: Float,
+    /** Beat Pulse: added to the fluid's scale, as the original does; 0 when still. */
+    val pulse: Float,
 ) {
     companion object {
-        val Still = SceneFrame(style = FluidStyle.Flow, effect = GraphicsEffect.Blur, orientation = CoverOrientation.Upright, phase = 0f, crossfade = 1f, scale = 0.5f, brightness = 0f, flowStep = SceneDirector.FLOW_SNAP)
+        val Still = SceneFrame(
+            style = FluidStyle.Flow,
+            effect = GraphicsEffect.Blur,
+            orientation = CoverOrientation.Upright,
+            phase = 0f,
+            crossfade = 1f,
+            scale = 0.5f,
+            brightness = 0f,
+            flowStep = SceneDirector.FLOW_SNAP,
+            pulse = 0f,
+        )
     }
 }
 
@@ -207,7 +219,7 @@ class SceneRenderer {
         Gl.bindTexture(flowNoise, "uImage", flowShown[flowShownIndex].texture, unit = 0)
         GLES30.glUniform1f(Gl.uniform(flowNoise, "uTime"), frame.phase)
         GLES30.glUniform2f(Gl.uniform(flowNoise, "uResolution"), fluid.width.toFloat(), fluid.height.toFloat())
-        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), flowScale(frame.scale))
+        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), flowScale(frame.scale) + frame.pulse)
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
         if (frame.effect == GraphicsEffect.FlutedGlass) return drawFlutedGlass(fluid.texture)
@@ -231,7 +243,7 @@ class SceneRenderer {
         Gl.bindTexture(warp, "uPrevious", images[1], unit = 1)
         GLES30.glUniform1f(Gl.uniform(warp, "uMix"), frame.crossfade.coerceIn(0f, 1f))
         GLES30.glUniform1f(Gl.uniform(warp, "uPhase"), frame.phase)
-        GLES30.glUniform1f(Gl.uniform(warp, "uScale"), frame.scale.coerceIn(0f, 1f))
+        GLES30.glUniform1f(Gl.uniform(warp, "uScale"), (frame.scale + frame.pulse).coerceIn(0f, 1f))
         val crop = cropFor(screenAspect, imageAspect[0])
         GLES30.glUniform2f(Gl.uniform(warp, "uCrop"), crop.first, crop.second)
         GLES30.glUniform2f(

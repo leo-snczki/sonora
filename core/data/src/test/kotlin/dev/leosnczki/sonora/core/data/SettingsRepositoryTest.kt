@@ -92,6 +92,19 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun the_beat_pulse_group_survives_a_restart() = runTest(UnconfinedTestDispatcher()) {
+        val file = File(folder.root, "beat.preferences_pb")
+        val firstRun = Job()
+        repository(CoroutineScope(coroutineContext + firstRun), file).apply {
+            setBeatOverride(true)
+            setBeatStrength(0.7f)
+        }
+        firstRun.cancelAndJoin()
+
+        assertEquals(0.7f, repository(backgroundScope, file).settings.first().effectiveBeatStrength)
+    }
+
+    @Test
     fun brightness_is_clamped_to_minus_one_to_one() = runTest {
         val repo = repository(backgroundScope, File(folder.root, "brightness.preferences_pb"))
 

@@ -15,6 +15,7 @@ import dev.leosnczki.sonora.core.domain.NowPlaying
 import dev.leosnczki.sonora.core.domain.SetupStatus
 import dev.leosnczki.sonora.core.domain.setupSteps
 import dev.leosnczki.sonora.core.domain.shouldShowBatteryHint
+import dev.leosnczki.sonora.core.media.BeatListener
 import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.core.media.monotonicMillis
 import dev.leosnczki.sonora.feature.home.HomeMessage
@@ -38,6 +39,7 @@ class HomeViewModel @Inject constructor(
     private val repository: NowPlayingRepository,
     private val settings: SettingsRepository,
     private val device: DeviceStatus,
+    private val beats: BeatListener,
 ) : ViewModel() {
     private val detection = DetectionWatch()
     private var status = SetupStatus(wallpaperSet = false, notificationAccess = false, audioAccess = false)
@@ -54,6 +56,7 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch { repository.nowPlaying.collect { refreshCard() } }
         viewModelScope.launch { repository.sessionSeen.collect { refreshCard() } }
+        viewModelScope.launch { beats.playerSilent.collect { silent -> _state.update { it.copy(playerSilent = silent) } } }
         viewModelScope.launch {
             settings.settings.collect { value ->
                 settingsLoaded = true
@@ -87,8 +90,10 @@ class HomeViewModel @Inject constructor(
         val access = repository.hasAccess()
         if (access) repository.start()
         status = SetupStatus(device.isSonoraTheWallpaper(), access, device.hasAudioAccess())
+        // Audio access may have just been granted: Beat Pulse can start listening.
+        beats.update()
         val battery = shouldShowBatteryHint(device.manufacturer(), device.isExemptFromBatteryOptimisation())
-        _state.update { it.copy(showBatteryHint = battery) }
+        _state.update { it.copy(showBatteryHint = battery, audioAccess = status.audioAccess) }
         refreshSetup()
         refreshCard()
         startTicker()
@@ -169,6 +174,10 @@ class HomeViewModel @Inject constructor(
     fun setGraphicsEffect(effect: GraphicsEffect) = save { settings.setGraphicsEffect(effect) }
 
     fun setMiscOverride(enabled: Boolean) = save { settings.setMiscOverride(enabled) }
+
+    fun setBeatOverride(enabled: Boolean) = save { settings.setBeatOverride(enabled) }
+
+    fun setBeatStrength(strength: Float) = saveSoon("beat") { settings.setBeatStrength(strength) }
 
     fun setBrightness(brightness: Float) = saveSoon("brightness") { settings.setBrightness(brightness) }
 

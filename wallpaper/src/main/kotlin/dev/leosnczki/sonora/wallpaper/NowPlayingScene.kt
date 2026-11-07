@@ -14,10 +14,12 @@ import dev.leosnczki.sonora.core.render.SceneFrame
  * Adapts the pure [SceneDirector] to the render loop: Now Playing and settings arrive on the
  * main thread, frames are pulled on the render thread, so access is synchronised.
  * [artFor] turns an [ArtId] into a bitmap; null art draws [fallbackImage] until #11 brings Backdrops.
+ * [pulseAt] gives Beat Pulse at a time in milliseconds.
  */
 class NowPlayingScene(
     private val artFor: (ArtId) -> Bitmap?,
     private val fallbackImage: () -> Bitmap,
+    private val pulseAt: (Long) -> Float = { 0f },
 ) : WallpaperScene {
     private val director = SceneDirector()
     private var uploaded: Pair<ArtId?, ArtId?>? = null
@@ -75,6 +77,7 @@ class NowPlayingScene(
             scale = state.scale,
             brightness = look.brightness,
             flowStep = director.flowStep(millis),
+            pulse = pulseAt(millis),
         )
     }
 

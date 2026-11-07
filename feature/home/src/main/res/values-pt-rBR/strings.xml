@@ -71,6 +71,14 @@
     <string name="graphics_group_desc">Usar seu próprio efeito em vez do desfoque padrão</string>
     <string name="graphics_blur">Desfoque</string>
     <string name="graphics_fluted_glass">Vidro canelado</string>
+    <string name="beat_group">Beat Pulse</string>
+    <string name="beat_group_desc">Fazer o fluido pulsar com a música</string>
+    <string name="beat_locked">Precisa de acesso ao áudio. O Sonora só ouve o que o aparelho toca, não o mic</string>
+    <string name="beat_allow">Permitir</string>
+    <string name="beat_strength">Força</string>
+    <string name="beat_strength_desc">Quanto o fluido cresce com o grave</string>
+    <string name="beat_silent_title">O Sonora não consegue ouvir este Player</string>
+    <string name="beat_silent_body">A música está tocando, mas nenhum som chega ao Beat Pulse. Alguns Players guardam o áudio só para si; o Sonora nunca recorre ao microfone.</string>
     <string name="misc_group">Outros</string>
     <string name="misc_group_desc">Usar seu próprio brilho em vez do padrão</string>
     <string name="brightness">Brilho</string>

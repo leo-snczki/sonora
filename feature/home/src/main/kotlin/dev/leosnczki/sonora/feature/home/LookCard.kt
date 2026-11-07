@@ -9,11 +9,13 @@ import androidx.compose.ui.res.stringResource
 import dev.leosnczki.sonora.core.designsystem.SonoraColors
 import dev.leosnczki.sonora.core.designsystem.SonoraSpace
 import dev.leosnczki.sonora.core.designsystem.SonoraType
+import dev.leosnczki.sonora.core.designsystem.component.ButtonVariant
 import dev.leosnczki.sonora.core.designsystem.component.LabeledRangeSlider
 import dev.leosnczki.sonora.core.designsystem.component.LabeledSlider
 import dev.leosnczki.sonora.core.designsystem.component.SectionCard
 import dev.leosnczki.sonora.core.designsystem.component.SegmentedChoice
 import dev.leosnczki.sonora.core.designsystem.component.SettingGroup
+import dev.leosnczki.sonora.core.designsystem.component.SonoraButton
 import dev.leosnczki.sonora.core.designsystem.component.SwitchRow
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.GraphicsEffect
@@ -22,7 +24,8 @@ import kotlin.math.roundToInt
 
 /** The settings groups. Each change applies live to the wallpaper behind the screen. */
 @Composable
-internal fun LookCard(settings: SonoraSettings, actions: HomeActions) {
+internal fun LookCard(state: HomeScreenState, actions: HomeActions) {
+    val settings = state.settings
     SectionCard(stringResource(R.string.look_title)) {
         FluidStyleChoice(settings.fluidStyle, actions)
         if (settings.fluidStyle == FluidStyle.Cover) CoverOrientationSwitches(settings, actions)
@@ -30,6 +33,8 @@ internal fun LookCard(settings: SonoraSettings, actions: HomeActions) {
         FluidGroup(settings, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
         GraphicsGroup(settings, actions)
+        Spacer(Modifier.height(SonoraSpace.Md))
+        BeatPulseGroup(state, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
         MiscGroup(settings, actions)
     }
@@ -53,6 +58,35 @@ private fun GraphicsGroup(settings: SonoraSettings, actions: HomeActions) {
             onSelect = actions::setGraphicsEffect,
             label = { labels.getValue(it) },
         )
+    }
+}
+
+/** Locked without audio access, with the reason and the way to grant it: no microphone fallback. */
+@Composable
+private fun BeatPulseGroup(state: HomeScreenState, actions: HomeActions) {
+    val settings = state.settings
+    SettingGroup(
+        label = stringResource(R.string.beat_group),
+        supporting = stringResource(R.string.beat_group_desc),
+        checked = settings.beatOverride,
+        onCheckedChange = actions::setBeatOverride,
+        lockedReason = if (state.audioAccess) null else stringResource(R.string.beat_locked),
+        lockedAction = {
+            SonoraButton(stringResource(R.string.beat_allow), actions::allowAudioAccess, variant = ButtonVariant.Secondary)
+        },
+    ) {
+        LabeledSlider(
+            label = stringResource(R.string.beat_strength),
+            supporting = stringResource(R.string.beat_strength_desc),
+            value = settings.beatStrength,
+            onValueChange = actions::setBeatStrength,
+            describe = { "${(it * 100).roundToInt()}%" },
+        )
+        if (state.playerSilent) {
+            Spacer(Modifier.height(SonoraSpace.Xs))
+            Text(stringResource(R.string.beat_silent_title), style = SonoraType.BodyStrong, color = SonoraColors.Warning)
+            Text(stringResource(R.string.beat_silent_body), style = SonoraType.Caption, color = SonoraColors.TextMuted)
+        }
     }
 }
 

@@ -42,6 +42,10 @@ data class HomeScreenState(
     val nowPlaying: NowPlayingCardState = NowPlayingCardState.NoAccess,
     val message: HomeMessage? = null,
     val settings: SonoraSettings = SonoraSettings.Default,
+    /** Whether Beat Pulse may listen to the device's audio. */
+    val audioAccess: Boolean = false,
+    /** Music plays but Beat Pulse hears nothing: the Player can't be heard. */
+    val playerSilent: Boolean = false,
 ) {
     companion object {
         val Preview = HomeScreenState(
@@ -74,6 +78,8 @@ interface HomeActions {
     fun setGraphicsEffect(effect: GraphicsEffect) {}
     fun setMiscOverride(enabled: Boolean) {}
     fun setBrightness(brightness: Float) {}
+    fun setBeatOverride(enabled: Boolean) {}
+    fun setBeatStrength(strength: Float) {}
     fun openProjectPage() {}
     fun openLicences() {}
 
@@ -103,7 +109,7 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                     val primary: List<@Composable () -> Unit> = listOfNotNull(
                         state.setup?.let { steps -> { SetupCard(steps, actions) } },
                         { NowPlayingCard(state.nowPlaying, actions) },
-                        { LookCard(state.settings, actions) },
+                        { LookCard(state, actions) },
                     )
                     val secondary: List<@Composable () -> Unit> = listOf(
                         { HelpCard(state.showBatteryHint, actions) },

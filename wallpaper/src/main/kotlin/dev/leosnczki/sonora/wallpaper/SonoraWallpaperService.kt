@@ -4,6 +4,7 @@ import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
 import dagger.hilt.android.AndroidEntryPoint
 import dev.leosnczki.sonora.core.data.SettingsRepository
+import dev.leosnczki.sonora.core.media.BeatListener
 import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.core.render.TestImage
 import javax.inject.Inject
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 class SonoraWallpaperService : WallpaperService() {
     @Inject lateinit var nowPlaying: NowPlayingRepository
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var beats: BeatListener
 
     /** Shown until #11 brings Backdrops: drawn once, shared by every engine. */
     private val placeholder by lazy { TestImage.create(256) }
@@ -29,7 +31,7 @@ class SonoraWallpaperService : WallpaperService() {
 
     private inner class SonoraEngine : Engine() {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-        private val scene = NowPlayingScene(artFor = nowPlaying::art, fallbackImage = { placeholder })
+        private val scene = NowPlayingScene(artFor = nowPlaying::art, fallbackImage = { placeholder }, pulseAt = { beats.pulse.frame(it) })
         private val loop = RenderLoop(scene, resources.displayMetrics.density)
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
@@ -46,6 +48,7 @@ class SonoraWallpaperService : WallpaperService() {
                     scene.setFluid(it.effectiveFluid)
                     scene.setOrientation(it.coverOrientation)
                     scene.setLook(it.effectiveLook)
+                    beats.setStrength(it.effectiveBeatStrength)
                     loop.poke()
                 }
             }
@@ -58,12 +61,14 @@ class SonoraWallpaperService : WallpaperService() {
 
         override fun onVisibilityChanged(visible: Boolean) {
             scene.setVisible(visible)
+            beats.setVisible(this, visible)
             loop.setVisible(visible)
         }
 
         override fun onSurfaceDestroyed(holder: SurfaceHolder) = loop.detach()
 
         override fun onDestroy() {
+            beats.setVisible(this, false)
             scope.cancel()
             loop.quit()
         }
