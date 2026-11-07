@@ -23,6 +23,7 @@ include(
     ":core:data",
     ":core:media",
     ":core:render",
+    ":feature:backdrops",
     ":feature:home",
     ":wallpaper",
 )

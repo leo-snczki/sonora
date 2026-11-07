@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_back">Voltar</string>
+    <string name="library_title">Biblioteca de fundos</string>
+    <string name="library_desc">O que o papel de parede mostra quando não há capa para mostrar</string>
+    <string name="library_builtin">Incluídos</string>
+    <string name="library_mine">Meus</string>
+    <string name="library_empty_title">Nenhum fundo salvo ainda</string>
+    <string name="library_empty_body">Salve a capa do que está tocando para guardá-la como fundo.</string>
+    <string name="library_save_album_art">Salvar a capa atual</string>
+    <string name="library_save_unavailable">Toque uma música para salvar a capa</string>
+    <string name="library_delete_title">Apagar este fundo?</string>
+    <string name="library_delete_body">Ele sai da biblioteca e a imagem é removida do aparelho.</string>
+    <string name="library_delete">Apagar</string>
+    <string name="library_cancel">Cancelar</string>
+    <string name="backdrop_dusk">Crepúsculo</string>
+    <string name="backdrop_lagoon">Laguna</string>
+    <string name="backdrop_ember">Brasa</string>
+    <string name="backdrop_moss">Musgo</string>
+    <string name="backdrop_orchid">Orquídea</string>
+    <string name="backdrop_glacier">Geleira</string>
+    <string name="backdrop_citrus">Cítrico</string>
+    <string name="backdrop_graphite">Grafite</string>
+</resources>

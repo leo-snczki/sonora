@@ -85,6 +85,7 @@
     <string name="keep_after_pause_desc">Once the music stops, keep its Album Art instead of the Backdrop</string>
     <string name="keep_after_reboot">Keep after rebooting</string>
     <string name="keep_after_reboot_desc">Show the last Album Art when the device starts, before any music</string>
+    <string name="backdrop_library">Backdrop Library</string>
     <string name="misc_group">Misc</string>
     <string name="misc_group_desc">Use your own brightness instead of the default</string>
     <string name="brightness">Brightness</string>

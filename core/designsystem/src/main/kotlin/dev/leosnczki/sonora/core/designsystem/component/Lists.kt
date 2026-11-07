@@ -1,8 +1,10 @@
 package dev.leosnczki.sonora.core.designsystem.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +30,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -162,7 +167,11 @@ fun SonoraTabs(titles: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     }
 }
 
-/** A Backdrop in the library: square image, name, selected ring. */
+/**
+ * A Backdrop in the library: square image, name, selected ring. With [onDelete], a long press
+ * deletes it, and so does a custom accessibility action labelled [deleteLabel].
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BackdropTile(
     image: Painter,
@@ -170,16 +179,22 @@ fun BackdropTile(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onDelete: (() -> Unit)? = null,
+    deleteLabel: String? = null,
 ) {
     val shape = RoundedCornerShape(SonoraRadius.Md)
     val selectedText = stringResource(R.string.ds_selected)
     Column(
         modifier
-            .clickable(role = Role.Button, onClick = onClick)
+            .combinedClickable(role = Role.Button, onClick = onClick, onLongClick = onDelete)
             .clearAndSetSemantics {
                 contentDescription = name
                 role = Role.Button
                 if (selected) stateDescription = selectedText
+                onClick { onClick(); true }
+                if (onDelete != null && deleteLabel != null) {
+                    customActions = listOf(CustomAccessibilityAction(deleteLabel) { onDelete(); true })
+                }
             },
         verticalArrangement = Arrangement.spacedBy(SonoraSpace.Xs),
     ) {

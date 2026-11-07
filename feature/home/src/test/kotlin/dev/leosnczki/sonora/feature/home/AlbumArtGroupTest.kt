@@ -23,6 +23,7 @@ class AlbumArtGroupTest {
         override fun setAlbumArtOverride(enabled: Boolean) { calls += "album=$enabled" }
         override fun setKeepAfterPause(enabled: Boolean) { calls += "pause=$enabled" }
         override fun setKeepAfterReboot(enabled: Boolean) { calls += "reboot=$enabled" }
+        override fun openBackdropLibrary() { calls += "library" }
     }
 
     private fun show(state: HomeScreenState) = compose.setContent { HomeScreen(state, actions) }
@@ -35,6 +36,15 @@ class AlbumArtGroupTest {
         compose.onNodeWithText("Keep after rebooting").performScrollTo().performClick()
 
         assertEquals(listOf("pause=true", "reboot=true"), calls)
+    }
+
+    @Test
+    fun the_backdrop_library_opens_whether_the_group_is_on_or_off() {
+        show(HomeScreenState.Preview.copy(setup = null))
+
+        compose.onNodeWithText("Backdrop Library", ignoreCase = true).performScrollTo().performClick()
+
+        assertEquals(listOf("library"), calls)
     }
 
     @Test

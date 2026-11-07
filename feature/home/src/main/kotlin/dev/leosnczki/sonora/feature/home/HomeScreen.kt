@@ -92,6 +92,7 @@ interface HomeActions {
     fun setAlbumArtOverride(enabled: Boolean) {}
     fun setKeepAfterPause(enabled: Boolean) {}
     fun setKeepAfterReboot(enabled: Boolean) {}
+    fun openBackdropLibrary() {}
     fun openProjectPage() {}
     fun openLicences() {}
 
