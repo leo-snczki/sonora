@@ -44,4 +44,15 @@ class SettingsRepositoryTest {
 
         assertEquals(SonoraSettings.Default.copy(fluidOverride = true, fluidScale = 0.8f, speedMin = 0.2f, speedMax = 0.9f, setupCompletedOnce = true), restored)
     }
+
+    @Test
+    fun an_out_of_range_speed_range_is_clamped_never_inverted() = runTest {
+        val repo = repository(backgroundScope, File(folder.root, "clamp.preferences_pb"))
+
+        repo.setSpeedRange(1.2f, 1f)
+        repo.settings.first().let { assertEquals(1f to 1f, it.speedMin to it.speedMax) }
+
+        repo.setSpeedRange(-0.5f, -0.2f)
+        repo.settings.first().let { assertEquals(0f to 0f, it.speedMin to it.speedMax) }
+    }
 }

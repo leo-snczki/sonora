@@ -29,16 +29,22 @@ class NowPlayingScene(
     @Synchronized
     fun setFluid(settings: FluidSettings) = director.setFluid(settings)
 
-    @Synchronized
-    override fun takeImages(nanos: Long): SceneImages? {
-        val state = director.frame(nanos / 1_000_000)
-        val wanted = state.currentArt to state.previousArt
-        if (wanted == uploaded) return null
-        uploaded = wanted
-        return SceneImages(image(state.currentArt), image(state.previousArt))
-    }
+    private var lastMissAt = Long.MIN_VALUE
 
-    private fun image(art: ArtId?): Bitmap = art?.let(artFor) ?: fallbackImage()
+    /**
+     * Render thread only. Bitmaps are resolved outside the lock: scaling a large cover must not
+     * hold up the main thread. Art that is not available yet is retried about once a second.
+     */
+    override fun takeImages(nanos: Long): SceneImages? {
+        val wanted = synchronized(this) { director.frame(nanos / 1_000_000).let { it.currentArt to it.previousArt } }
+        if (wanted == uploaded) return null
+        if (nanos - lastMissAt < RETRY_NANOS) return null
+        val current = wanted.first?.let(artFor)
+        val previous = wanted.second?.let(artFor)
+        val complete = (wanted.first == null || current != null) && (wanted.second == null || previous != null)
+        if (complete) uploaded = wanted else lastMissAt = nanos
+        return SceneImages(current ?: fallbackImage(), previous ?: fallbackImage())
+    }
 
     @Synchronized
     override fun frameAt(nanos: Long): SceneFrame {
@@ -48,4 +54,8 @@ class NowPlayingScene(
 
     @Synchronized
     override fun targetFps(nanos: Long): Int = director.frame(nanos / 1_000_000).targetFps
+
+    private companion object {
+        const val RETRY_NANOS = 1_000_000_000L
+    }
 }

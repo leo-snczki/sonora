@@ -33,7 +33,7 @@ fun LicencesScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     BackHandler(onBack = onBack)
     val context = LocalContext.current
     val texts = remember {
-        listOf("ofl_manrope.txt", "lucide.txt").associateWith { name ->
+        listOf("ofl_manrope.txt", "ofl_jetbrainsmono.txt", "lucide.txt").associateWith { name ->
             runCatching { context.assets.open("licenses/$name").bufferedReader().use { it.readText() } }.getOrDefault("")
         }
     }
@@ -54,7 +54,7 @@ fun LicencesScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     color = SonoraColors.Text,
                     modifier = Modifier.semantics { heading() },
                 )
-                Notice(stringResource(R.string.licences_fonts), texts.getValue("ofl_manrope.txt"))
+                Notice(stringResource(R.string.licences_fonts), texts.getValue("ofl_manrope.txt") + "\n\n" + texts.getValue("ofl_jetbrainsmono.txt"))
                 Notice(stringResource(R.string.licences_icons), texts.getValue("lucide.txt"))
                 Notice(stringResource(R.string.licences_libraries), stringResource(R.string.licences_apache))
             }
