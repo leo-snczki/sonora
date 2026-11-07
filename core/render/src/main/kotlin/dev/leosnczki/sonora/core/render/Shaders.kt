@@ -70,6 +70,8 @@ void main() {
                        fbm(p + 3.0 * first + vec2(6.1, 1.9) - t * 0.3));
     vec2 uv = (vUv - 0.5) * uCrop + 0.5;
     uv = mirror(uv + (second - 0.5) * mix(0.35, 0.8, uScale));
+    // Textures hold the bitmap top row at t = 0, while vUv.y = 0 is the bottom of the screen.
+    uv.y = 1.0 - uv.y;
     vec3 color = mix(texture(uPrevious, uv).rgb, texture(uCurrent, uv).rgb, uMix);
     outColor = vec4(color, 1.0);
 }
