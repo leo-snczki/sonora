@@ -37,8 +37,9 @@ class SceneDirectorTest {
     }
 
     @Test
-    fun motion_runs_at_maximum_speed_while_playing_and_eases_to_minimum_when_paused() {
-        val fluid = FluidSettings.Default
+    fun cover_runs_at_maximum_speed_while_playing_and_eases_to_minimum_when_paused() {
+        val fluid = FluidSettings.defaultsFor(FluidStyle.Cover)
+        director.setFluid(fluid)
         director.onNowPlaying(playing("a"), atMillis = 0)
         assertEquals(fluid.speedMax, director.frame(atMillis = 5_000).speed, 0.001f)
 
@@ -127,5 +128,20 @@ class SceneDirectorTest {
     @Test
     fun the_first_flow_frame_snaps_to_the_image() {
         assertTrue(SceneDirector().flowStep(atMillis = 5_000) >= SceneDirector.FLOW_SNAP)
+    }
+
+    /** Flow's speed one second after the music starts, sampled at [fps]. */
+    private fun flowSpeedOneSecondAfterPlay(fps: Int): Float {
+        val director = SceneDirector(FluidSettings.defaultsFor(FluidStyle.Flow)).apply { setVisible(true) }
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        return (0..fps).map { director.frame(atMillis = it * 1000L / fps).speed }.last()
+    }
+
+    @Test
+    fun flow_speed_closes_in_on_its_target_like_the_original_whatever_the_frame_rate() {
+        // The original moves 1% of the way each frame at 60 fps: after a second, 0.99^60 ≈ 0.547
+        // of the gap from 0.05 to 0.5 is left.
+        assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 60), 0.002f)
+        assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 120), 0.002f)
     }
 }

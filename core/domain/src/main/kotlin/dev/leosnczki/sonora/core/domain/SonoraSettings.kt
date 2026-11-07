@@ -15,7 +15,7 @@ data class SonoraSettings(
     val setupCompletedOnce: Boolean,
 ) {
     val effectiveFluid: FluidSettings
-        get() = if (fluidOverride) FluidSettings(fluidStyle, fluidScale, speedMin, speedMax) else FluidSettings.Default.copy(style = fluidStyle)
+        get() = if (fluidOverride) FluidSettings(fluidStyle, fluidScale, speedMin, speedMax) else FluidSettings.defaultsFor(fluidStyle)
 
     companion object {
         val Default = SonoraSettings(
