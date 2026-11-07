@@ -1,5 +1,6 @@
 package dev.leosnczki.sonora.home
 
+import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,7 @@ import dev.leosnczki.sonora.core.domain.Backdrops
 import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryState
 import dev.leosnczki.sonora.feature.backdrops.MineBackdrop
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ class BackdropLibraryViewModel @Inject constructor(
     private val library: BackdropLibrary,
     private val settings: SettingsRepository,
     private val nowPlaying: NowPlayingRepository,
+    private val device: DeviceStatus,
 ) : ViewModel() {
     /** Images of the user's Backdrops, read once each. */
     private val images = MutableStateFlow<Map<BackdropId, ImageBitmap>>(emptyMap())
@@ -52,8 +55,9 @@ class BackdropLibraryViewModel @Inject constructor(
     private fun readImage(id: BackdropId) {
         if (!reading.add(id)) return
         viewModelScope.launch {
-            val image = library.image(id)?.asImageBitmap() ?: return@launch
-            images.update { it + (id to image) }
+            val image = runCatching { library.image(id) }.getOrNull()?.asImageBitmap()
+            // Unreadable for now: the next change of the list tries again.
+            if (image == null) reading -= id else images.update { it + (id to image) }
         }
     }
 
@@ -61,22 +65,41 @@ class BackdropLibraryViewModel @Inject constructor(
         viewModelScope.launch { settings.setBackdrop(id) }
     }
 
-    /** Saves what is playing as a Backdrop in Mine, named after its album or track. */
+    private var saving = false
+
+    /** Saves what is playing as a Backdrop in Mine, named after its album, its track or its Player. */
     fun saveAlbumArt() {
         val playing = nowPlaying.nowPlaying.value ?: return
         val art = playing.art ?: return
+        if (saving) return
+        saving = true
         viewModelScope.launch {
-            val image = withContext(Dispatchers.Default) { nowPlaying.art(art) } ?: return@launch
-            val name = playing.track?.album ?: playing.track?.title ?: playing.player
-            library.save(image, name, BackdropSource.AlbumArt)
+            try {
+                val image = withContext(Dispatchers.Default) { nowPlaying.art(art) } ?: return@launch
+                val name = listOfNotNull(playing.track?.album, playing.track?.title).firstOrNull { it.isNotBlank() }
+                    ?: device.appName(playing.player)
+                library.save(image, name, BackdropSource.AlbumArt)
+            } catch (e: IOException) {
+                Log.w(TAG, "could not save the Album Art as a Backdrop", e)
+            } finally {
+                saving = false
+            }
         }
     }
 
     fun delete(id: BackdropId) {
         viewModelScope.launch {
-            library.delete(id)
+            try {
+                library.delete(id)
+            } catch (e: IOException) {
+                Log.w(TAG, "could not delete a Backdrop", e)
+            }
             images.update { it - id }
             reading -= id
         }
+    }
+
+    private companion object {
+        const val TAG = "SonoraBackdrops"
     }
 }

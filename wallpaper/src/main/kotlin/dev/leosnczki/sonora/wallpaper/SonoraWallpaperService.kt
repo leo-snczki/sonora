@@ -41,24 +41,32 @@ class SonoraWallpaperService : WallpaperService() {
     /**
      * A built-in Backdrop is drawn on the spot; the user's own is read from private storage in the
      * background, so it is null until then (the scene shows the default meanwhile and tries again).
+     * Only the last saved one stays in memory; one that can't be read draws the default.
      */
     private fun backdropImage(id: BackdropId): Bitmap? = synchronized(backdropImages) {
         backdropImages[id]?.let { return it }
-        if (Backdrops.isBuiltin(id)) {
+        if (Backdrops.isBuiltin(id) || id in unreadableBackdrops) {
             val backdrop = Backdrops.resolve(id)
             return backdropImages.getOrPut(backdrop.id) { BackdropImage.create(backdrop) }
         }
         if (readingBackdrops.add(id)) {
             serviceScope.launch {
-                val image = library.image(id)
+                val image = runCatching { library.image(id) }.getOrNull()
                 synchronized(backdropImages) {
                     readingBackdrops -= id
-                    if (image != null) backdropImages[id] = image
+                    if (image == null) {
+                        unreadableBackdrops += id
+                    } else {
+                        backdropImages.keys.removeAll { !Backdrops.isBuiltin(it) }
+                        backdropImages[id] = image
+                    }
                 }
             }
         }
         null
     }
+
+    private val unreadableBackdrops = mutableSetOf<BackdropId>()
 
     /** Owns work that outlives one engine, such as reading the saved Album Art. */
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)

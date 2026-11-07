@@ -2,6 +2,7 @@ package dev.leosnczki.sonora.core.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -28,10 +29,10 @@ data class BackdropEntity(
     @PrimaryKey val id: String,
     val name: String,
     val source: String,
-    @androidx.room.ColumnInfo(name = "image_path") val imagePath: String,
-    @androidx.room.ColumnInfo(name = "sort_order", defaultValue = "0") val sortOrder: Int,
-    @androidx.room.ColumnInfo(name = "created_at") val createdAt: Long,
-    @androidx.room.ColumnInfo(name = "updated_at") val updatedAt: Long,
+    @ColumnInfo(name = "image_path") val imagePath: String,
+    @ColumnInfo(name = "sort_order", defaultValue = "0") val sortOrder: Int,
+    @ColumnInfo(name = "created_at") val createdAt: Long,
+    @ColumnInfo(name = "updated_at") val updatedAt: Long,
 )
 
 @Dao
@@ -56,8 +57,8 @@ abstract class BackdropDatabase : RoomDatabase() {
 
 /**
  * The user's own Backdrops ("Mine"): a row each, and its image in private storage under [dir].
- * Deleting removes the file first, then the row (an orphan file is harmless, a row pointing at
- * nothing is not), and falls back to the first built-in Backdrop if it was the chosen one.
+ * Deleting falls back to the first built-in Backdrop if it was the chosen one, then removes the
+ * file, then the row (an orphan file is harmless, a row pointing at nothing is not).
  */
 class BackdropLibrary(
     private val dao: BackdropDao,
@@ -88,9 +89,10 @@ class BackdropLibrary(
 
     suspend fun delete(id: BackdropId) = withContext(Dispatchers.IO) {
         val row = dao.find(id.value) ?: return@withContext
+        // The choice moves first, so the wallpaper never points at a Backdrop that is gone.
+        if (settings.settings.first().backdrop == id) settings.setBackdrop(Backdrops.Default)
         File(dir, row.imagePath).delete()
         dao.delete(id.value)
-        if (settings.settings.first().backdrop == id) settings.setBackdrop(Backdrops.Default)
     }
 
     private fun BackdropEntity.toBackdrop() = SavedBackdrop(
