@@ -37,6 +37,8 @@ internal fun LookCard(state: HomeScreenState, actions: HomeActions) {
         BeatPulseGroup(state, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
         AlbumArtGroup(settings, actions)
+        // Outside the group's override: choosing the Backdrop is a choice of look, not fine-tuning.
+        SonoraButton(stringResource(R.string.backdrop_library), actions::openBackdropLibrary, variant = ButtonVariant.Secondary)
         Spacer(Modifier.height(SonoraSpace.Md))
         MiscGroup(settings, actions)
     }

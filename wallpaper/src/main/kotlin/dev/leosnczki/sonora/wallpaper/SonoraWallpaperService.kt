@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
 import dagger.hilt.android.AndroidEntryPoint
+import dev.leosnczki.sonora.core.data.BackdropLibrary
 import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.BackdropId
@@ -31,13 +32,32 @@ class SonoraWallpaperService : WallpaperService() {
     @Inject lateinit var settings: SettingsRepository
     @Inject lateinit var beats: BeatListener
     @Inject lateinit var lastAlbumArt: LastAlbumArt
+    @Inject lateinit var library: BackdropLibrary
 
-    /** Backdrops drawn once, shared by every engine. An unknown one draws the default. */
+    /** Backdrops drawn or read once, shared by every engine. */
     private val backdropImages = mutableMapOf<BackdropId, Bitmap>()
+    private val readingBackdrops = mutableSetOf<BackdropId>()
 
-    private fun backdropImage(id: BackdropId): Bitmap = synchronized(backdropImages) {
-        val backdrop = Backdrops.resolve(id)
-        backdropImages.getOrPut(backdrop.id) { BackdropImage.create(backdrop) }
+    /**
+     * A built-in Backdrop is drawn on the spot; the user's own is read from private storage in the
+     * background, so it is null until then (the scene shows the default meanwhile and tries again).
+     */
+    private fun backdropImage(id: BackdropId): Bitmap? = synchronized(backdropImages) {
+        backdropImages[id]?.let { return it }
+        if (Backdrops.isBuiltin(id)) {
+            val backdrop = Backdrops.resolve(id)
+            return backdropImages.getOrPut(backdrop.id) { BackdropImage.create(backdrop) }
+        }
+        if (readingBackdrops.add(id)) {
+            serviceScope.launch {
+                val image = library.image(id)
+                synchronized(backdropImages) {
+                    readingBackdrops -= id
+                    if (image != null) backdropImages[id] = image
+                }
+            }
+        }
+        null
     }
 
     /** Owns work that outlives one engine, such as reading the saved Album Art. */

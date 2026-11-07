@@ -26,8 +26,8 @@ Beat Pulse permission rationale and locked state,beats,should,yes,yes,
 Beat Pulse silence hint after 30 s,beats,should,no,yes,no mic fallback; grilling Q12
 Graphics group: Blur or Fluted Glass,settings,should,yes,yes,S01; Fluted Glass ported from the original (ADR-0003)
 Album art group: keep after pause / keep after reboot,settings,should,yes,yes,last Album Art in private storage only while kept
-Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,no,S04; built-in = ~8 gradients generated in code
-Save the current Album Art as a Backdrop,backdrops,should,yes,no,S04 Mine
+Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,yes,S04; built-in = ~8 gradients generated in code
+Save the current Album Art as a Backdrop,backdrops,should,yes,yes,S04 Mine
 Upload an image as a Backdrop with crop,backdrops,should,yes,no,S04 Mine + S05
 Misc group: brightness,settings,should,yes,yes,-1..1; Flow uses the original's ×(1+0.05b) per pass
 Restart listener and help card,help,should,yes,yes,S01 help card + Restart listener in the detection hint

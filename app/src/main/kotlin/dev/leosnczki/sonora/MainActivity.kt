@@ -19,13 +19,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import dev.leosnczki.sonora.core.domain.BackdropId
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.media.NowPlayingListenerService
+import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryActions
+import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryScreen
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
 import dev.leosnczki.sonora.feature.home.LicencesScreen
 import dev.leosnczki.sonora.feature.home.PlayerChooserScreen
+import dev.leosnczki.sonora.home.BackdropLibraryViewModel
 import dev.leosnczki.sonora.home.DeviceStatus
 import dev.leosnczki.sonora.home.HomeViewModel
 import dev.leosnczki.sonora.wallpaper.SonoraWallpaperService
@@ -33,6 +37,7 @@ import javax.inject.Inject
 
 private const val PROJECT_URL = "https://github.com/leo-snczki/sonora"
 private const val KEY_LICENCES = "licences"
+private const val KEY_BACKDROPS = "backdrops"
 
 /** The settings screen. Also the live wallpaper's "settings" entry in the system picker. */
 @AndroidEntryPoint
@@ -40,6 +45,20 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var device: DeviceStatus
 
     private val viewModel: HomeViewModel by viewModels()
+    private val backdrops: BackdropLibraryViewModel by viewModels()
+    private var showBackdrops by mutableStateOf(false)
+
+    private val backdropActions = object : BackdropLibraryActions {
+        override fun choose(id: BackdropId) = backdrops.choose(id)
+
+        override fun saveAlbumArt() = backdrops.saveAlbumArt()
+
+        override fun delete(id: BackdropId) = backdrops.delete(id)
+
+        override fun back() {
+            showBackdrops = false
+        }
+    }
     private val requestAudio = registerForActivityResult(ActivityResultContracts.RequestPermission()) { viewModel.onResume() }
     private var showLicences by mutableStateOf(false)
 
@@ -116,18 +135,27 @@ class MainActivity : ComponentActivity() {
         override fun openLicences() {
             showLicences = true
         }
+
+        override fun openBackdropLibrary() {
+            showBackdrops = true
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         showLicences = savedInstanceState?.getBoolean(KEY_LICENCES) == true
+        showBackdrops = savedInstanceState?.getBoolean(KEY_BACKDROPS) == true
         setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val players by viewModel.players.collectAsStateWithLifecycle()
             val chooser = players
             when {
                 showLicences -> LicencesScreen(onBack = { showLicences = false })
+                showBackdrops -> {
+                    val library by backdrops.state.collectAsStateWithLifecycle()
+                    BackdropLibraryScreen(library, backdropActions)
+                }
                 chooser != null -> PlayerChooserScreen(
                     chooser,
                     onOpen = { player ->
@@ -144,6 +172,7 @@ class MainActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(KEY_LICENCES, showLicences)
+        outState.putBoolean(KEY_BACKDROPS, showBackdrops)
     }
 
     override fun onResume() {

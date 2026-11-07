@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_back">Back</string>
+    <string name="library_title">Backdrop Library</string>
+    <string name="library_desc">What the wallpaper shows when there is no Album Art to show</string>
+    <string name="library_builtin">Built-in</string>
+    <string name="library_mine">Mine</string>
+    <string name="library_empty_title">No saved Backdrops yet</string>
+    <string name="library_empty_body">Save the Album Art of what is playing to keep it as a Backdrop.</string>
+    <string name="library_save_album_art">Save current Album Art</string>
+    <string name="library_save_unavailable">Play some music to save its Album Art</string>
+    <string name="library_delete_title">Delete this Backdrop?</string>
+    <string name="library_delete_body">It leaves the library and its image is removed from the device.</string>
+    <string name="library_delete">Delete</string>
+    <string name="library_cancel">Cancel</string>
+    <string name="backdrop_dusk">Dusk</string>
+    <string name="backdrop_lagoon">Lagoon</string>
+    <string name="backdrop_ember">Ember</string>
+    <string name="backdrop_moss">Moss</string>
+    <string name="backdrop_orchid">Orchid</string>
+    <string name="backdrop_glacier">Glacier</string>
+    <string name="backdrop_citrus">Citrus</string>
+    <string name="backdrop_graphite">Graphite</string>
+</resources>

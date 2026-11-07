@@ -4,6 +4,18 @@ package dev.leosnczki.sonora.core.domain
 @JvmInline
 value class BackdropId(val value: String)
 
+/** Where a Backdrop the user saved came from. */
+enum class BackdropSource { AlbumArt, Upload }
+
+/** A Backdrop the user saved: its image lives in private storage at [imagePath] (relative). */
+data class SavedBackdrop(
+    val id: BackdropId,
+    val name: String,
+    val source: BackdropSource,
+    val imagePath: String,
+    val createdAt: Long,
+)
+
 /** A Backdrop that ships with Sonora: a diagonal gradient of two to four colours (ARGB). */
 data class BuiltinBackdrop(val id: BackdropId, val colors: List<Int>)
 
@@ -26,6 +38,9 @@ object Backdrops {
 
     /** The built-in Backdrop to draw for [id]: an unknown one falls back to the first. */
     fun resolve(id: BackdropId): BuiltinBackdrop = builtin(id) ?: Builtin.first()
+
+    /** Built-in ids read builtin:<key>; saved ones are UUIDs, so the two never collide. */
+    fun isBuiltin(id: BackdropId) = id.value.startsWith("builtin:")
 }
 
 /** What the wallpaper draws: some Album Art, or a Backdrop. */

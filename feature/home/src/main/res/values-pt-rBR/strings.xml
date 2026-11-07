@@ -85,6 +85,7 @@
     <string name="keep_after_pause_desc">Quando a música parar, manter a capa em vez do fundo</string>
     <string name="keep_after_reboot">Manter após reiniciar</string>
     <string name="keep_after_reboot_desc">Mostrar a última capa quando o aparelho ligar, antes de qualquer música</string>
+    <string name="backdrop_library">Biblioteca de fundos</string>
     <string name="misc_group">Outros</string>
     <string name="misc_group_desc">Usar seu próprio brilho em vez do padrão</string>
     <string name="brightness">Brilho</string>
