@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.media.NowPlayingListenerService
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
@@ -76,6 +77,8 @@ class MainActivity : ComponentActivity() {
         override fun restartListener() = viewModel.restartListener()
 
         override fun messageShown() = viewModel.messageShown()
+
+        override fun setFluidStyle(style: FluidStyle) = viewModel.setFluidStyle(style)
 
         override fun setFluidOverride(enabled: Boolean) = viewModel.setFluidOverride(enabled)
 

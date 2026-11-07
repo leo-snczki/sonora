@@ -1,6 +1,13 @@
 package dev.leosnczki.sonora.core.render
 
 internal object Shaders {
+    /** Interleaved gradient noise: a cheap, well spread dither that never leaves 0..1. */
+    private const val DITHER = """
+float dither(vec2 p) {
+    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
+}
+"""
+
     /** One full-screen triangle; uv covers 0..1 on screen. */
     const val VERTEX = """#version 300 es
 out vec2 vUv;
@@ -99,14 +106,114 @@ out vec4 outColor;
 uniform sampler2D uSource;
 uniform float uBrightness;
 
-// Interleaved gradient noise: a cheap, well spread dither that never leaves 0..1.
-float dither(vec2 p) {
-    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
-}
-
+$DITHER
 void main() {
     vec3 color = texture(uSource, vUv).rgb;
     color = uBrightness >= 0.0 ? mix(color, vec3(1.0), uBrightness * 0.5) : color * (1.0 + uBrightness * 0.8);
+    color += dither(gl_FragCoord.xy) / 255.0;
+    outColor = vec4(color, 1.0);
+}
+"""
+
+    /**
+     * Flow, ported from the original (ADR-0003): a twice domain-warped fbm whose value is the
+     * coordinate to read the pre-blurred image at, so the image dissolves into its own colours.
+     * [uScale] widens the window of the image that is read. v runs top-down here, as in the
+     * original, so the fbm field keeps its orientation. highp: [uTime] grows without bound.
+     */
+    const val FLOW_NOISE = """#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uImage;
+uniform float uTime;
+uniform vec2 uResolution;
+uniform float uScale;
+
+float random(vec2 st) {
+    float dt = dot(st, vec2(12.9898, 78.233));
+    float sn = mod(dt, 3.14);
+    return fract(sin(sn) * 43758.5453);
+}
+
+float noise(vec2 st) {
+    vec2 i = floor(st);
+    vec2 f = fract(st);
+    float a = random(i);
+    float b = random(i + vec2(1.0, 0.0));
+    float c = random(i + vec2(0.0, 1.0));
+    float d = random(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float fbm(vec2 st) {
+    float v = 0.0;
+    float a = 0.5;
+    vec2 shift = st * 0.5;
+    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+    for (int i = 0; i < 3; ++i) {
+        v += a * noise(st);
+        st = rot * st * 1.3 + shift;
+        a *= 0.5;
+    }
+    return v;
+}
+
+void main() {
+    vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
+    if (uResolution.x > uResolution.y) {
+        uv.x = uv.x * (uResolution.x / uResolution.y);
+    } else {
+        uv.y = uv.y / (uResolution.x / uResolution.y);
+    }
+    vec2 q = vec2(fbm(uv + vec2(uTime * 0.1, cos(uTime))), fbm(uv + vec2(uTime * 0.1, uTime)));
+    vec2 r = vec2(fbm(0.5 * uv + 2.0 * q + vec2(uTime * 0.05, 0.0)),
+                  fbm(0.5 * uv + 2.0 * q + vec2(uTime * 0.1, 0.0)));
+    r = (r - 0.5) * uScale + 0.5;
+    outColor = vec4(texture(uImage, r).rgb, 1.0);
+}
+"""
+
+    /**
+     * Flow's track change, as in the original: each texel walks a straight line in RGB towards
+     * the new image, [uStep] at a time, and lands on it once closer than one step.
+     */
+    const val FLOW_FADE = """#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uShown;
+uniform sampler2D uTarget;
+uniform float uStep;
+
+void main() {
+    vec3 shown = texture(uShown, vUv).rgb;
+    vec3 target = texture(uTarget, vUv).rgb;
+    float distance = length(target - shown);
+    float amount = distance <= uStep ? 1.0 : uStep / distance;
+    outColor = vec4(mix(shown, target, amount), 1.0);
+}
+"""
+
+    /**
+     * Flow's final pass to the screen, as in the original: one light Kawase tap (its offset is in
+     * units of the 192px image, not of the screen), the brightness multiply, then our dither.
+     */
+    const val FLOW_COMPOSE = """#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uSource;
+uniform vec2 uStep;
+uniform float uBrightness;
+
+$DITHER
+void main() {
+    vec2 flipped = vec2(-uStep.x, uStep.y);
+    vec3 color = (texture(uSource, vUv + uStep).rgb + texture(uSource, vUv - uStep).rgb
+        + texture(uSource, vUv + flipped).rgb + texture(uSource, vUv - flipped).rgb) * 0.25;
+    color *= 1.0 + uBrightness * 0.05;
     color += dither(gl_FragCoord.xy) / 255.0;
     outColor = vec4(color, 1.0);
 }

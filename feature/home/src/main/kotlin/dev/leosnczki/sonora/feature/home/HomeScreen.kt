@@ -26,6 +26,7 @@ import dev.leosnczki.sonora.core.designsystem.SonoraTheme
 import dev.leosnczki.sonora.core.designsystem.component.PageScrim
 import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
 import dev.leosnczki.sonora.core.designsystem.component.SonoraSnackbarHost
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SetupStatus
 import dev.leosnczki.sonora.core.domain.SetupStepState
 import dev.leosnczki.sonora.core.domain.SonoraSettings
@@ -62,6 +63,7 @@ interface HomeActions {
     fun openPlayer() {}
     fun restartListener() {}
     fun messageShown() {}
+    fun setFluidStyle(style: FluidStyle) {}
     fun setFluidOverride(enabled: Boolean) {}
     fun setFluidScale(scale: Float) {}
     fun setSpeedRange(min: Float, max: Float) {}

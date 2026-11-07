@@ -1,15 +1,18 @@
 package dev.leosnczki.sonora.feature.home
 
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import kotlin.test.assertEquals
 import org.junit.Rule
@@ -27,6 +30,7 @@ class FluidGroupTest {
         override fun setFluidOverride(enabled: Boolean) { calls += "override=$enabled" }
         override fun setFluidScale(scale: Float) { calls += "scale=$scale" }
         override fun setSpeedRange(min: Float, max: Float) { calls += "speed=$min..$max" }
+        override fun setFluidStyle(style: FluidStyle) { calls += "style=$style" }
     }
 
     private fun show(settings: SonoraSettings) = compose.setContent {
@@ -63,5 +67,17 @@ class FluidGroupTest {
             .performSemanticsAction(SemanticsActions.SetProgress) { it(0.25f) }
 
         assertEquals("scale=0.25", calls.last())
+    }
+
+    @Test
+    fun the_fluid_style_is_chosen_even_with_the_group_off() {
+        show(SonoraSettings.Default.copy(fluidOverride = false, fluidStyle = FluidStyle.Flow))
+
+        compose.onNodeWithText("Flow", ignoreCase = true).performScrollTo()
+            .assertIsSelected()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+        compose.onNodeWithText("Cover", ignoreCase = true).performClick()
+
+        assertEquals(listOf("style=Cover"), calls)
     }
 }

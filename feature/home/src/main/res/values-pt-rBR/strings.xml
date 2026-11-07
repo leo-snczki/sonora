@@ -47,6 +47,10 @@
     <string name="chooser_empty_body">Instale um app de música ou abra direto o que você usa.</string>
     <string name="chooser_open">Abrir</string>
     <string name="look_title">Aparência</string>
+    <string name="fluid_style">Estilo do fluido</string>
+    <string name="fluid_style_desc">Como o papel de parede transforma a imagem em fluido</string>
+    <string name="fluid_style_flow">Fluxo</string>
+    <string name="fluid_style_cover">Imagem</string>
     <string name="fluid_group">Movimento</string>
     <string name="fluid_group_desc">Usar seus próprios ajustes do fluido em vez dos padrões</string>
     <string name="fluid_scale">Escala do fluido</string>

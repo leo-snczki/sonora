@@ -9,6 +9,7 @@ import dev.leosnczki.sonora.BuildConfig
 import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.DetectionWatch
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.NowPlaying
 import dev.leosnczki.sonora.core.domain.SetupStatus
 import dev.leosnczki.sonora.core.domain.setupSteps
@@ -149,6 +150,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun messageShown() = _state.update { it.copy(message = null) }
+
+    fun setFluidStyle(style: FluidStyle) = save { settings.setFluidStyle(style) }
 
     fun setFluidOverride(enabled: Boolean) = save { settings.setFluidOverride(enabled) }
 
