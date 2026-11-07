@@ -206,9 +206,6 @@ fun LabeledSlider(
     Column(modifier.fillMaxWidth()) {
         SliderHeader(label, description, supporting)
         Box(contentAlignment = Alignment.Center) {
-            if (centreTick) {
-                Box(Modifier.size(width = SonoraSize.StrokeInput, height = SonoraSpace.Md).background(SonoraColors.Track))
-            }
             Slider(
                 value = shown,
                 onValueChange = {
@@ -224,6 +221,10 @@ fun LabeledSlider(
                     stateDescription = description
                 },
             )
+            // Over the track, taller than it and in the text colour, so it shows on either side.
+            if (centreTick) {
+                Box(Modifier.size(width = SonoraSize.StrokeInput * 2, height = SonoraSpace.Lg).background(SonoraColors.Text))
+            }
         }
     }
 }
