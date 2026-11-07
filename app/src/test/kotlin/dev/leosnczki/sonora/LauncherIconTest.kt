@@ -6,7 +6,16 @@ import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Test
+import org.w3c.dom.Document
 import org.w3c.dom.Element
+
+private const val CURVE_STEPS = 50
+private const val CENTER_TOLERANCE = 0.25
+
+/** A command letter or a number; separators are skipped, anything else is captured in group 2. */
+private val PATH_TOKEN = Regex("([A-Za-z]|[-+]?(?:[0-9]+\\.?[0-9]*|\\.[0-9]+)(?:[eE][-+]?[0-9]+)?)|[\\s,]+|(.)")
+
+private data class Point(val x: Double, val y: Double)
 
 /** The launcher icon's artwork is centered on its canvas, and the docs icon shows the same artwork. */
 class LauncherIconTest {
@@ -16,50 +25,51 @@ class LauncherIconTest {
 
     private fun parse(file: File) = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
 
-    private fun elements(file: File, tag: String): List<Element> {
-        val nodes = parse(file).getElementsByTagName(tag)
+    private fun elements(doc: Document, tag: String): List<Element> {
+        val nodes = doc.getElementsByTagName(tag)
         return (0 until nodes.length).map { nodes.item(it) as Element }
     }
 
+    private fun tokenize(pathData: String): List<String> = PATH_TOKEN.findAll(pathData).mapNotNull { match ->
+        match.groups[2]?.let { error("unexpected '${it.value}' in $pathData") }
+        match.groups[1]?.value
+    }.toList()
+
     /** Samples the points of a path made of move and (smooth) cubic commands, absolute or relative. */
-    private fun samplePath(pathData: String): List<Pair<Double, Double>> {
-        val tokens = Regex("[A-Za-z]|-?[0-9]*\\.?[0-9]+").findAll(pathData).map { it.value }.toList()
-        val points = mutableListOf<Pair<Double, Double>>()
-        var x = 0.0
-        var y = 0.0
-        var lastControl: Pair<Double, Double>? = null
+    private fun samplePath(pathData: String): List<Point> {
+        val tokens = tokenize(pathData)
+        val points = mutableListOf<Point>()
+        var current = Point(0.0, 0.0)
+        var lastControl: Point? = null
         var command = ' '
         var i = 0
         fun next() = tokens[i++].toDouble()
-        fun cubic(c1: Pair<Double, Double>, c2: Pair<Double, Double>, end: Pair<Double, Double>) {
-            for (step in 1..50) {
-                val t = step / 50.0
+        fun point() = if (command.isLowerCase()) Point(current.x + next(), current.y + next()) else Point(next(), next())
+        fun cubic(c1: Point, c2: Point, end: Point) {
+            for (step in 1..CURVE_STEPS) {
+                val t = step.toDouble() / CURVE_STEPS
                 val u = 1 - t
-                points += Pair(
-                    u * u * u * x + 3 * u * u * t * c1.first + 3 * u * t * t * c2.first + t * t * t * end.first,
-                    u * u * u * y + 3 * u * u * t * c1.second + 3 * u * t * t * c2.second + t * t * t * end.second,
+                points += Point(
+                    u * u * u * current.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * end.x,
+                    u * u * u * current.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * end.y,
                 )
             }
             lastControl = c2
-            x = end.first
-            y = end.second
+            current = end
         }
         while (i < tokens.size) {
             if (tokens[i][0].isLetter()) command = tokens[i++][0]
-            val dx = if (command.isLowerCase()) x else 0.0
-            val dy = if (command.isLowerCase()) y else 0.0
             when (command) {
                 'M', 'm' -> {
-                    x = dx + next()
-                    y = dy + next()
-                    points += Pair(x, y)
+                    current = point()
+                    points += current
                     lastControl = null
                     if (i < tokens.size && !tokens[i][0].isLetter()) error("implicit line-to in $pathData")
                 }
-                'C', 'c' -> cubic(Pair(dx + next(), dy + next()), Pair(dx + next(), dy + next()), Pair(dx + next(), dy + next()))
+                'C', 'c' -> cubic(point(), point(), point())
                 'S', 's' -> {
-                    val c1 = lastControl?.let { Pair(2 * x - it.first, 2 * y - it.second) } ?: Pair(x, y)
-                    cubic(c1, Pair(dx + next(), dy + next()), Pair(dx + next(), dy + next()))
+                    val c1 = lastControl?.let { Point(2 * current.x - it.x, 2 * current.y - it.y) } ?: current
+                    cubic(c1, point(), point())
                 }
                 else -> error("unsupported path command '$command' in $pathData")
             }
@@ -69,10 +79,10 @@ class LauncherIconTest {
 
     @Test
     fun launcher_foreground_artwork_is_centered_on_the_viewport() {
-        val vector = parse(foreground).documentElement
-        val width = vector.getAttribute("android:viewportWidth").toDouble()
-        val height = vector.getAttribute("android:viewportHeight").toDouble()
-        val paths = elements(foreground, "path")
+        val doc = parse(foreground)
+        val width = doc.documentElement.getAttribute("android:viewportWidth").toDouble()
+        val height = doc.documentElement.getAttribute("android:viewportHeight").toDouble()
+        val paths = elements(doc, "path")
         assertTrue(paths.isNotEmpty(), "no paths in $foreground")
 
         var minX = Double.MAX_VALUE
@@ -90,14 +100,14 @@ class LauncherIconTest {
         }
         val centerX = (minX + maxX) / 2
         val centerY = (minY + maxY) / 2
-        assertTrue(abs(centerX - width / 2) <= 0.25, "artwork x center is $centerX, expected ${width / 2}")
-        assertTrue(abs(centerY - height / 2) <= 0.25, "artwork y center is $centerY, expected ${height / 2}")
+        assertTrue(abs(centerX - width / 2) <= CENTER_TOLERANCE, "artwork x center is $centerX, expected ${width / 2}")
+        assertTrue(abs(centerY - height / 2) <= CENTER_TOLERANCE, "artwork y center is $centerY, expected ${height / 2}")
     }
 
     @Test
     fun docs_icon_matches_the_launcher_foreground() {
-        val vectorPaths = elements(foreground, "path").map { it.getAttribute("android:pathData") }
-        val svgPaths = elements(docsIcon, "path").map { it.getAttribute("d") }
+        val vectorPaths = elements(parse(foreground), "path").map { it.getAttribute("android:pathData") }
+        val svgPaths = elements(parse(docsIcon), "path").map { it.getAttribute("d") }
         assertEquals(vectorPaths, svgPaths)
     }
 }
