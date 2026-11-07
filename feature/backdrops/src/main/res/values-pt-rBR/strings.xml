@@ -21,4 +21,13 @@
     <string name="backdrop_glacier">Geleira</string>
     <string name="backdrop_citrus">Cítrico</string>
     <string name="backdrop_graphite">Grafite</string>
+    <string name="library_upload">Enviar imagem</string>
+    <string name="crop_title">Recortar a imagem</string>
+    <string name="crop_rotate_left">Girar à esquerda</string>
+    <string name="crop_rotate_right">Girar à direita</string>
+    <string name="crop_flip">Espelhar</string>
+    <string name="crop_zoom_in">Aproximar</string>
+    <string name="crop_zoom_out">Afastar</string>
+    <string name="crop_cancel">Cancelar</string>
+    <string name="crop_use">Usar</string>
 </resources>

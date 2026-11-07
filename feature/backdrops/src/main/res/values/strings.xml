@@ -21,4 +21,13 @@
     <string name="backdrop_glacier">Glacier</string>
     <string name="backdrop_citrus">Citrus</string>
     <string name="backdrop_graphite">Graphite</string>
+    <string name="library_upload">Upload image</string>
+    <string name="crop_title">Crop the image</string>
+    <string name="crop_rotate_left">Rotate left</string>
+    <string name="crop_rotate_right">Rotate right</string>
+    <string name="crop_flip">Flip</string>
+    <string name="crop_zoom_in">Zoom in</string>
+    <string name="crop_zoom_out">Zoom out</string>
+    <string name="crop_cancel">Cancel</string>
+    <string name="crop_use">Use</string>
 </resources>
