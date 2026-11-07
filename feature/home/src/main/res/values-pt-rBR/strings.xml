@@ -51,6 +51,10 @@
     <string name="fluid_style_desc">Como o papel de parede transforma a imagem em fluido</string>
     <string name="fluid_style_flow">Fluxo</string>
     <string name="fluid_style_cover">Imagem</string>
+    <string name="cover_flip_vertical">Inverter vertical</string>
+    <string name="cover_flip_vertical_desc">Virar a imagem de cabeça para baixo</string>
+    <string name="cover_mirror_horizontal">Espelhar horizontal</string>
+    <string name="cover_mirror_horizontal_desc">Trocar os lados esquerdo e direito da imagem</string>
     <string name="fluid_group">Movimento</string>
     <string name="fluid_group_desc">Usar seus próprios ajustes do fluido em vez dos padrões</string>
     <string name="fluid_scale">Escala do fluido</string>

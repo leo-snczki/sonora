@@ -3,6 +3,7 @@ package dev.leosnczki.sonora.core.render
 import android.graphics.Bitmap
 import android.opengl.GLES30
 import android.opengl.GLUtils
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SceneDirector
 import kotlin.math.max
@@ -10,6 +11,8 @@ import kotlin.math.max
 /** What one frame should look like. Produced from the scene state, consumed by [SceneRenderer]. */
 data class SceneFrame(
     val style: FluidStyle,
+    /** Which way Cover shows the image. */
+    val orientation: CoverOrientation,
     /** Position of the fluid animation; advances faster when the music plays. */
     val phase: Float,
     /** 0 shows the previous image, 1 the current one. */
@@ -22,7 +25,7 @@ data class SceneFrame(
     val flowStep: Float,
 ) {
     companion object {
-        val Still = SceneFrame(style = FluidStyle.Flow, phase = 0f, crossfade = 1f, scale = 0.5f, brightness = 0f, flowStep = SceneDirector.FLOW_SNAP)
+        val Still = SceneFrame(style = FluidStyle.Flow, orientation = CoverOrientation.Upright, phase = 0f, crossfade = 1f, scale = 0.5f, brightness = 0f, flowStep = SceneDirector.FLOW_SNAP)
     }
 }
 
@@ -210,6 +213,11 @@ class SceneRenderer {
         GLES30.glUniform1f(Gl.uniform(warp, "uScale"), frame.scale.coerceIn(0f, 1f))
         val crop = cropFor(screenAspect, imageAspect[0])
         GLES30.glUniform2f(Gl.uniform(warp, "uCrop"), crop.first, crop.second)
+        GLES30.glUniform2f(
+            Gl.uniform(warp, "uFlip"),
+            if (frame.orientation.mirrorHorizontal) 1f else 0f,
+            if (frame.orientation.flipVertical) 1f else 0f,
+        )
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
         // 2. Kawase blur, ping-ponging between the two targets.

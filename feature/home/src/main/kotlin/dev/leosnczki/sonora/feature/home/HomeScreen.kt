@@ -64,6 +64,8 @@ interface HomeActions {
     fun restartListener() {}
     fun messageShown() {}
     fun setFluidStyle(style: FluidStyle) {}
+    fun setCoverFlipVertical(enabled: Boolean) {}
+    fun setCoverMirrorHorizontal(enabled: Boolean) {}
     fun setFluidOverride(enabled: Boolean) {}
     fun setFluidScale(scale: Float) {}
     fun setSpeedRange(min: Float, max: Float) {}

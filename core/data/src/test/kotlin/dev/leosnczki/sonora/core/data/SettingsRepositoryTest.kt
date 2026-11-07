@@ -57,6 +57,20 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun the_cover_orientation_survives_a_restart() = runTest(UnconfinedTestDispatcher()) {
+        val file = File(folder.root, "orientation.preferences_pb")
+        val firstRun = Job()
+        repository(CoroutineScope(coroutineContext + firstRun), file).apply {
+            setCoverFlipVertical(true)
+            setCoverMirrorHorizontal(true)
+        }
+        firstRun.cancelAndJoin()
+
+        val restored = repository(backgroundScope, file).settings.first()
+        assertEquals(true to true, restored.coverFlipVertical to restored.coverMirrorHorizontal)
+    }
+
+    @Test
     fun an_out_of_range_speed_range_is_clamped_never_inverted() = runTest {
         val repo = repository(backgroundScope, File(folder.root, "clamp.preferences_pb"))
 

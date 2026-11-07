@@ -55,6 +55,7 @@ class NowPlayingScene(
         val state = director.frame(millis)
         return SceneFrame(
             style = state.style,
+            orientation = state.orientation,
             phase = state.phase,
             crossfade = state.crossfade,
             scale = state.scale,

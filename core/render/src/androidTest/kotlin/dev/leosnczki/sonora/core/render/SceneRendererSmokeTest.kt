@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.opengl.GLES30
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -37,13 +38,14 @@ class SceneRendererSmokeTest {
         phase: Float = 0f,
         style: FluidStyle = FluidStyle.Cover,
         image: Bitmap = TestImage.create(128),
+        orientation: CoverOrientation = CoverOrientation.Upright,
     ) {
         egl.releaseSurface(surface)
         surface = egl.createOffscreenSurface(width, height)
         egl.makeCurrent(surface)
         renderer.setImages(current = image, previous = null)
         renderer.resize(width, height, density = TABLET_DENSITY)
-        renderer.draw(SceneFrame.Still.copy(phase = phase, style = style))
+        renderer.draw(SceneFrame.Still.copy(phase = phase, style = style, orientation = orientation))
     }
 
     private fun readPixels(width: Int, height: Int): ByteBuffer {
@@ -159,6 +161,38 @@ class SceneRendererSmokeTest {
 
         assertTrue(redness(256, 256, from = 0, to = 26) > 100, "red on top")
         assertTrue(redness(256, 256, from = 230, to = 256) < -100, "blue at the bottom")
+    }
+
+    @Test
+    fun flip_vertical_turns_cover_upside_down() {
+        renderAt(256, 256, image = redTopBlueBottom(), orientation = CoverOrientation(flipVertical = true, mirrorHorizontal = false))
+
+        assertTrue(redness(256, 256, from = 0, to = 26) < -100, "blue on top")
+        assertTrue(redness(256, 256, from = 230, to = 256) > 100, "red at the bottom")
+    }
+
+    /** Average red minus average blue over columns [from] until [to], counted from the left. */
+    private fun rednessOfColumns(width: Int, height: Int, from: Int, to: Int): Float {
+        val buffer = readPixels(width, height)
+        var sum = 0L
+        for (y in 0 until height) for (x in from until to) {
+            val i = (y * width + x) * 4
+            sum += (buffer.get(i).toInt() and 0xFF) - (buffer.get(i + 2).toInt() and 0xFF)
+        }
+        return sum.toFloat() / ((to - from) * height)
+    }
+
+    @Test
+    fun mirror_horizontal_swaps_cover_left_and_right() {
+        val redLeftBlueRight = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
+            for (y in 0 until 64) for (x in 0 until 64) setPixel(x, y, if (x < 32) Color.RED else Color.BLUE)
+        }
+        renderAt(256, 256, image = redLeftBlueRight)
+        assertTrue(rednessOfColumns(256, 256, from = 0, to = 26) > 100, "upright: red on the left")
+
+        renderAt(256, 256, image = redLeftBlueRight, orientation = CoverOrientation(flipVertical = false, mirrorHorizontal = true))
+        assertTrue(rednessOfColumns(256, 256, from = 0, to = 26) < -100, "mirrored: blue on the left")
+        assertTrue(rednessOfColumns(256, 256, from = 230, to = 256) > 100, "mirrored: red on the right")
     }
 
     private companion object {
