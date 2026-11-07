@@ -10,8 +10,8 @@ android {
     namespace = "dev.leosnczki.sonora"
     defaultConfig {
         applicationId = "dev.leosnczki.sonora"
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
     }
     buildFeatures {
         compose = true

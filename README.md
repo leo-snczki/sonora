@@ -151,12 +151,6 @@ Some players keep their audio away from the visualizer. When that happens, Sonor
 </details>
 
 <details>
-<summary><b>The wallpaper stopped following my music.</b></summary>
-<br />
-Some phone makers stop apps in the background. Open Sonora and tap <i>Restart listener</i>, then set Sonora to "unrestricted" in the battery settings. Sonora shows a hint when your phone's maker is known to do this.
-</details>
-
-<details>
 <summary><b>Which music apps work?</b></summary>
 <br />
 Any app that shows media controls in the notification shade or on the lock screen should work, since they all publish a media session. YT Music ReVanced has been tested on a real device. If your player doesn't work, please <a href="https://github.com/leo-snczki/sonora/issues">open an issue</a>.
