@@ -10,7 +10,7 @@ Accept any Player regardless of notification flags,now playing,must,no,yes,fixes
 Now Playing selection rule (latest playing session wins; else last played paused),now playing,must,yes,yes,grilling Q6
 10 s pause grace before Now Playing counts as stopped,now playing,must,no,yes,avoids flashing between tracks; grilling Q9
 Re-colour wallpaper on track change with crossfade,now playing,must,yes,yes,F02
-Backdrop when there is no Album Art,wallpaper,must,yes,no,S02 idle
+Backdrop when there is no Album Art,wallpaper,must,yes,yes,S02 idle; 8 built-in gradients of our own
 Setup card (set wallpaper / notification access / audio optional),onboarding,must,yes,yes,S01; card hides when all steps done
 Open the system wallpaper picker straight on Sonora,onboarding,must,no,yes,ACTION_CHANGE_LIVE_WALLPAPER
 Wallpaper metadata (label author description thumbnail settings activity),onboarding,must,yes,yes,S02
@@ -25,7 +25,7 @@ Beat Pulse strength slider,beats,should,yes,yes,
 Beat Pulse permission rationale and locked state,beats,should,yes,yes,
 Beat Pulse silence hint after 30 s,beats,should,no,yes,no mic fallback; grilling Q12
 Graphics group: Blur or Fluted Glass,settings,should,yes,yes,S01; Fluted Glass ported from the original (ADR-0003)
-Album art group: keep after pause / keep after reboot,settings,should,yes,no,
+Album art group: keep after pause / keep after reboot,settings,should,yes,yes,last Album Art in private storage only while kept
 Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,no,S04; built-in = ~8 gradients generated in code
 Save the current Album Art as a Backdrop,backdrops,should,yes,no,S04 Mine
 Upload an image as a Backdrop with crop,backdrops,should,yes,no,S04 Mine + S05

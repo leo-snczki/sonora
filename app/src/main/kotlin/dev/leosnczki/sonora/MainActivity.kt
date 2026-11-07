@@ -95,6 +95,12 @@ class MainActivity : ComponentActivity() {
 
         override fun setBrightness(brightness: Float) = viewModel.setBrightness(brightness)
 
+        override fun setAlbumArtOverride(enabled: Boolean) = viewModel.setAlbumArtOverride(enabled)
+
+        override fun setKeepAfterPause(enabled: Boolean) = viewModel.setKeepAfterPause(enabled)
+
+        override fun setKeepAfterReboot(enabled: Boolean) = viewModel.setKeepAfterReboot(enabled)
+
         override fun setBeatOverride(enabled: Boolean) = viewModel.setBeatOverride(enabled)
 
         override fun setBeatStrength(strength: Float) = viewModel.setBeatStrength(strength)

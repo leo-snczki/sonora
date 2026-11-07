@@ -36,6 +36,11 @@ data class SonoraSettings(
     val beatOverride: Boolean,
     /** 0..1; how strongly the fluid follows the beat. */
     val beatStrength: Float,
+    val albumArtOverride: Boolean,
+    val keepAfterPause: Boolean,
+    val keepAfterReboot: Boolean,
+    /** Shown when there is no Album Art to show. */
+    val backdrop: BackdropId,
     /** Set once the required setup steps were all done, so the setup card can shrink to what is missing. */
     val setupCompletedOnce: Boolean,
 ) {
@@ -52,6 +57,9 @@ data class SonoraSettings(
     val effectiveBeatStrength: Float
         get() = if (beatOverride) beatStrength else 0f
 
+    val effectiveAlbumArtKeep: AlbumArtKeep
+        get() = if (albumArtOverride) AlbumArtKeep(keepAfterPause, keepAfterReboot) else AlbumArtKeep.Default
+
     companion object {
         val Default = SonoraSettings(
             fluidStyle = FluidSettings.Default.style,
@@ -66,6 +74,10 @@ data class SonoraSettings(
             brightness = LookSettings.Default.brightness,
             beatOverride = false,
             beatStrength = 0.5f,
+            albumArtOverride = false,
+            keepAfterPause = AlbumArtKeep.Default.afterPause,
+            keepAfterReboot = AlbumArtKeep.Default.afterReboot,
+            backdrop = Backdrops.Default,
             setupCompletedOnce = false,
         )
     }

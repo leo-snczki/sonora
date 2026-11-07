@@ -79,6 +79,12 @@
     <string name="beat_strength_desc">Quanto o fluido cresce com o grave</string>
     <string name="beat_silent_title">O Sonora não consegue ouvir este Player</string>
     <string name="beat_silent_body">A música está tocando, mas nenhum som chega ao Beat Pulse. Alguns Players guardam o áudio só para si; o Sonora nunca recorre ao microfone.</string>
+    <string name="album_art_group">Capa do álbum</string>
+    <string name="album_art_group_desc">Escolher o que o papel de parede mantém em vez dos padrões</string>
+    <string name="keep_after_pause">Manter após pausar</string>
+    <string name="keep_after_pause_desc">Quando a música parar, manter a capa em vez do fundo</string>
+    <string name="keep_after_reboot">Manter após reiniciar</string>
+    <string name="keep_after_reboot_desc">Mostrar a última capa quando o aparelho ligar, antes de qualquer música</string>
     <string name="misc_group">Outros</string>
     <string name="misc_group_desc">Usar seu próprio brilho em vez do padrão</string>
     <string name="brightness">Brilho</string>

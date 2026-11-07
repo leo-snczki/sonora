@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.leosnczki.sonora.BuildConfig
 import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
+import dev.leosnczki.sonora.core.domain.Backdrops
 import dev.leosnczki.sonora.core.domain.DetectionWatch
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.GraphicsEffect
@@ -62,6 +63,7 @@ class HomeViewModel @Inject constructor(
                 settingsLoaded = true
                 _state.update { it.copy(settings = value) }
                 refreshSetup()
+                refreshBackdrop()
             }
         }
     }
@@ -95,8 +97,15 @@ class HomeViewModel @Inject constructor(
         val battery = shouldShowBatteryHint(device.manufacturer(), device.isExemptFromBatteryOptimisation())
         _state.update { it.copy(showBatteryHint = battery, audioAccess = status.audioAccess) }
         refreshSetup()
+        refreshBackdrop()
         refreshCard()
         startTicker()
+    }
+
+    /** When Sonora is not the wallpaper, the screen draws the chosen Backdrop behind itself. */
+    private fun refreshBackdrop() {
+        val behind = if (status.wallpaperSet) null else (Backdrops.builtin(_state.value.settings.backdrop) ?: Backdrops.Builtin.first()).colors
+        _state.update { it.copy(backdropBehind = behind) }
     }
 
     private fun refreshSetup() {
@@ -174,6 +183,12 @@ class HomeViewModel @Inject constructor(
     fun setGraphicsEffect(effect: GraphicsEffect) = save { settings.setGraphicsEffect(effect) }
 
     fun setMiscOverride(enabled: Boolean) = save { settings.setMiscOverride(enabled) }
+
+    fun setAlbumArtOverride(enabled: Boolean) = save { settings.setAlbumArtOverride(enabled) }
+
+    fun setKeepAfterPause(enabled: Boolean) = save { settings.setKeepAfterPause(enabled) }
+
+    fun setKeepAfterReboot(enabled: Boolean) = save { settings.setKeepAfterReboot(enabled) }
 
     fun setBeatOverride(enabled: Boolean) = save { settings.setBeatOverride(enabled) }
 

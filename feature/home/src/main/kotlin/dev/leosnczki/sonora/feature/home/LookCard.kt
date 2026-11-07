@@ -36,6 +36,8 @@ internal fun LookCard(state: HomeScreenState, actions: HomeActions) {
         Spacer(Modifier.height(SonoraSpace.Md))
         BeatPulseGroup(state, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
+        AlbumArtGroup(settings, actions)
+        Spacer(Modifier.height(SonoraSpace.Md))
         MiscGroup(settings, actions)
     }
 }
@@ -87,6 +89,29 @@ private fun BeatPulseGroup(state: HomeScreenState, actions: HomeActions) {
             Text(stringResource(R.string.beat_silent_title), style = SonoraType.BodyStrong, color = SonoraColors.Warning)
             Text(stringResource(R.string.beat_silent_body), style = SonoraType.Caption, color = SonoraColors.TextMuted)
         }
+    }
+}
+
+@Composable
+private fun AlbumArtGroup(settings: SonoraSettings, actions: HomeActions) {
+    SettingGroup(
+        label = stringResource(R.string.album_art_group),
+        supporting = stringResource(R.string.album_art_group_desc),
+        checked = settings.albumArtOverride,
+        onCheckedChange = actions::setAlbumArtOverride,
+    ) {
+        SwitchRow(
+            label = stringResource(R.string.keep_after_pause),
+            supporting = stringResource(R.string.keep_after_pause_desc),
+            checked = settings.keepAfterPause,
+            onCheckedChange = actions::setKeepAfterPause,
+        )
+        SwitchRow(
+            label = stringResource(R.string.keep_after_reboot),
+            supporting = stringResource(R.string.keep_after_reboot_desc),
+            checked = settings.keepAfterReboot,
+            onCheckedChange = actions::setKeepAfterReboot,
+        )
     }
 }
 

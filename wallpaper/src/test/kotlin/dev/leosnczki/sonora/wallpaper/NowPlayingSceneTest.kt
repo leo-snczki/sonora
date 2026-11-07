@@ -1,7 +1,10 @@
 package dev.leosnczki.sonora.wallpaper
 
 import android.graphics.Bitmap
+import dev.leosnczki.sonora.core.domain.AlbumArtKeep
 import dev.leosnczki.sonora.core.domain.ArtId
+import dev.leosnczki.sonora.core.domain.BackdropId
+import dev.leosnczki.sonora.core.domain.Backdrops
 import dev.leosnczki.sonora.core.domain.NowPlaying
 import dev.leosnczki.sonora.core.domain.SceneDirector
 import kotlin.test.assertEquals
@@ -14,10 +17,12 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NowPlayingSceneTest {
-    private val placeholder = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888)
+    private val backdrops = mutableMapOf<BackdropId, Bitmap>()
+    private fun backdrop(id: BackdropId) = backdrops.getOrPut(id) { Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888) }
+    private val placeholder get() = backdrop(Backdrops.Default)
     private val cover = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888)
     private val available = mutableMapOf<ArtId, Bitmap>()
-    private val scene = NowPlayingScene(artFor = { available[it] }, fallbackImage = { placeholder })
+    private val scene = NowPlayingScene(artFor = { available[it] }, backdropFor = ::backdrop)
 
     private fun playing(art: String) = NowPlaying("player", null, ArtId(art), playing = true, stopped = false)
 
@@ -33,7 +38,7 @@ class NowPlayingSceneTest {
 
     @Test
     fun each_frame_carries_the_beat_pulse() {
-        val pulsing = NowPlayingScene(artFor = { null }, fallbackImage = { placeholder }, pulseAt = { 0.25f })
+        val pulsing = NowPlayingScene(artFor = { null }, backdropFor = ::backdrop, pulseAt = { 0.25f })
 
         assertEquals(0.25f, pulsing.frameAt(nanos = 5_000_000_000L).pulse)
     }
@@ -60,5 +65,18 @@ class NowPlayingSceneTest {
         available[ArtId("a")] = cover
         assertNull(scene.takeImages(nanos = 5_500_000_000L), "not hammering every frame")
         assertSame(cover, scene.takeImages(nanos = 6_100_000_000L)?.current)
+    }
+
+    @Test
+    fun with_nothing_playing_the_first_built_in_backdrop_is_drawn() {
+        assertSame(backdrop(Backdrops.Default), scene.takeImages(nanos = 5_000_000_000L)?.current)
+    }
+
+    @Test
+    fun choosing_a_backdrop_hands_it_over() {
+        scene.takeImages(nanos = 5_000_000_000L)
+        scene.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = BackdropId("lagoon"))
+
+        assertSame(backdrop(BackdropId("lagoon")), scene.takeImages(nanos = 5_016_000_000L)?.current)
     }
 }
