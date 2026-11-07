@@ -3,6 +3,7 @@ package dev.leosnczki.sonora.core.domain
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 
 /** How the fluid turns the image into the wallpaper. */
 enum class FluidStyle {
@@ -16,7 +17,13 @@ enum class FluidStyle {
 /** How the fluid looks and moves. Speeds are in the scene's own units; [scale] runs from calm (0) to turbulent (1). */
 data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: Float, val speedMax: Float) {
     companion object {
-        val Default = FluidSettings(style = FluidStyle.Flow, scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f)
+        /** What each style moves with while the Motion group is off; Flow's are the original's. */
+        fun defaultsFor(style: FluidStyle) = when (style) {
+            FluidStyle.Flow -> FluidSettings(style, scale = 0.8f, speedMin = 0.05f, speedMax = 0.5f)
+            FluidStyle.Cover -> FluidSettings(style, scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f)
+        }
+
+        val Default = defaultsFor(FluidStyle.Flow)
     }
 }
 
@@ -115,10 +122,15 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
     private fun fadeProgress(atMillis: Long): Float =
         ((atMillis - fadeStartedAt).toFloat() / CROSSFADE_MILLIS).coerceIn(0f, 1f)
 
-    /** Speed ramps linearly from where it was at the last play/pause change towards its target. */
+    /**
+     * Speed moves from where it was at the last play/pause change towards its target. Flow closes
+     * in on it like the original, 1% of the gap per frame at 60 fps, made time-based; Cover ramps
+     * linearly.
+     */
     private fun speedAt(atMillis: Long): Float {
         val target = if (playing) fluid.speedMax else fluid.speedMin
         val elapsed = (atMillis - playingChangedAt).coerceAtLeast(0) / 1000f
+        if (fluid.style == FluidStyle.Flow) return target + (speedAtChange - target) * FLOW_SPEED_KEPT_PER_FRAME.pow(elapsed * 60f)
         val step = abs(fluid.speedMax - fluid.speedMin) / SPEED_RAMP_SECONDS * elapsed
         return if (speedAtChange < target) min(speedAtChange + step, target) else max(speedAtChange - step, target)
     }
@@ -129,6 +141,7 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         /** A step longer than any distance between two colours (√3): lands on the image at once. */
         const val FLOW_SNAP = 2f
         private const val FLOW_TRAVEL_PER_SECOND = 0.6f
+        private const val FLOW_SPEED_KEPT_PER_FRAME = 0.99f
         private const val SPEED_RAMP_SECONDS = 2f
     }
 }
