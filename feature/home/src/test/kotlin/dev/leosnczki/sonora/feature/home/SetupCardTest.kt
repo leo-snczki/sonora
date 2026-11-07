@@ -38,7 +38,7 @@ class SetupCardTest {
                 opened = true
             }
         }
-        compose.setContent { HomeScreen(HomeScreenState.Preview.copy(notificationAccess = false), actions) }
+        compose.setContent { HomeScreen(HomeScreenState.Preview.copy(notificationAccess = false, nowPlaying = NowPlayingCardState.Idle(showDetectionHint = false)), actions) }
 
         compose.onNodeWithText("Allow access", ignoreCase = true).performScrollTo().performClick()
 

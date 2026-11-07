@@ -11,16 +11,19 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.leosnczki.sonora.core.media.NowPlayingListenerService
-import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
-import dev.leosnczki.sonora.feature.home.HomeScreenState
 import dev.leosnczki.sonora.feature.home.LicencesScreen
+import dev.leosnczki.sonora.feature.home.PlayerChooserScreen
+import dev.leosnczki.sonora.home.DeviceStatus
+import dev.leosnczki.sonora.home.HomeViewModel
 import dev.leosnczki.sonora.wallpaper.SonoraWallpaperService
 import javax.inject.Inject
 
@@ -30,9 +33,10 @@ private const val KEY_LICENCES = "licences"
 /** The settings screen. Also the live wallpaper's "settings" entry in the system picker. */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject lateinit var nowPlaying: NowPlayingRepository
+    @Inject lateinit var device: DeviceStatus
 
-    private var state by mutableStateOf(HomeScreenState(versionName = BuildConfig.VERSION_NAME))
+    private val viewModel: HomeViewModel by viewModels()
+    private var showLicences by mutableStateOf(false)
 
     private val actions = object : HomeActions {
         override fun setWallpaper() {
@@ -53,6 +57,17 @@ class MainActivity : ComponentActivity() {
             if (detail == null || !startSafely(detail)) startSafely(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
+        override fun openPlayerChooser() = viewModel.openPlayerChooser()
+
+        override fun openPlayer() {
+            val player = viewModel.nowPlayingPlayer() ?: return
+            device.launchIntent(player)?.let(::startSafely)
+        }
+
+        override fun restartListener() = viewModel.restartListener()
+
+        override fun messageShown() = viewModel.messageShown()
+
         override fun openProjectPage() {
             startSafely(Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_URL)))
         }
@@ -62,17 +77,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private var showLicences by mutableStateOf(false)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         showLicences = savedInstanceState?.getBoolean(KEY_LICENCES) == true
         setContent {
-            if (showLicences) {
-                LicencesScreen(onBack = { showLicences = false })
-            } else {
-                HomeScreen(state, actions)
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val players by viewModel.players.collectAsStateWithLifecycle()
+            val chooser = players
+            when {
+                showLicences -> LicencesScreen(onBack = { showLicences = false })
+                chooser != null -> PlayerChooserScreen(
+                    chooser,
+                    onOpen = { player ->
+                        viewModel.closePlayerChooser()
+                        device.launchIntent(player.packageName)?.let(::startSafely)
+                    },
+                    onBack = viewModel::closePlayerChooser,
+                )
+                else -> HomeScreen(state, actions)
             }
         }
     }
@@ -84,13 +107,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val access = nowPlaying.hasAccess()
-        if (access) nowPlaying.start()
-        state = state.copy(wallpaperSet = isSonoraTheWallpaper(), notificationAccess = access)
+        viewModel.onResume()
     }
-
-    private fun isSonoraTheWallpaper(): Boolean =
-        WallpaperManager.getInstance(this).wallpaperInfo?.packageName == packageName
 
     private fun startSafely(intent: Intent): Boolean = try {
         startActivity(intent)

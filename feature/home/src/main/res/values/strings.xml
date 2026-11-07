@@ -4,7 +4,7 @@
     <string name="home_tagline">Your music, painted on your wallpaper</string>
 
     <string name="now_playing_title">Now playing</string>
-    <string name="now_playing_nothing">Nothing is playing yet.</string>
+    <string name="now_playing_nothing">Nothing is playing. Start some music and the wallpaper will follow.</string>
 
     <string name="help_title">Help</string>
     <string name="help_detection_q">How does Sonora know what is playing?</string>
@@ -30,4 +30,20 @@
     <string name="setup_wallpaper_action">Set wallpaper</string>
     <string name="setup_notifications">Let Sonora see what is playing</string>
     <string name="setup_notifications_action">Allow access</string>
+    <string name="now_playing_no_access">Sonora needs notification access to see what your music apps are playing.</string>
+    <string name="now_playing_open_music_app">Open a music app</string>
+    <string name="now_playing_unknown">Unknown</string>
+    <string name="now_playing_sentence">Now playing: %1$s by %2$s</string>
+    <string name="now_playing_playing_in">Playing in %1$s</string>
+    <string name="now_playing_paused_in">Paused in %1$s</string>
+    <string name="now_playing_open_player">Open %1$s</string>
+    <string name="detection_hint_title">Not detecting your music?</string>
+    <string name="detection_hint_body">Access is on but no music app has shown up. The system may have stopped Sonora\'s listener in the background.</string>
+    <string name="detection_hint_restart">Restart listener</string>
+    <string name="message_listener_restarted">Listener restarted. Play something to check it is back.</string>
+    <string name="chooser_title">Open your music app</string>
+    <string name="chooser_hint">Not on the list? Open your app yourself: it may still work with Sonora.</string>
+    <string name="chooser_empty_title">No music apps found</string>
+    <string name="chooser_empty_body">Install a music app, or open the one you use directly.</string>
+    <string name="chooser_open">Open</string>
 </resources>
