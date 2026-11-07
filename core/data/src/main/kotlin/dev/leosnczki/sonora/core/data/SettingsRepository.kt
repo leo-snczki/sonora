@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import javax.inject.Inject
@@ -48,8 +49,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         return SonoraSettings(
             // Stored by name; an unknown name (a style since removed) falls back to the default.
             fluidStyle = FluidStyle.entries.firstOrNull { it.name == this[FLUID_STYLE] } ?: defaults.fluidStyle,
-            coverFlipVertical = this[COVER_FLIP_VERTICAL] ?: defaults.coverFlipVertical,
-            coverMirrorHorizontal = this[COVER_MIRROR_HORIZONTAL] ?: defaults.coverMirrorHorizontal,
+            coverOrientation = CoverOrientation(
+                flipVertical = this[COVER_FLIP_VERTICAL] ?: defaults.coverOrientation.flipVertical,
+                mirrorHorizontal = this[COVER_MIRROR_HORIZONTAL] ?: defaults.coverOrientation.mirrorHorizontal,
+            ),
             fluidOverride = this[FLUID_OVERRIDE] ?: defaults.fluidOverride,
             fluidScale = this[FLUID_SCALE] ?: defaults.fluidScale,
             speedMin = this[SPEED_MIN] ?: defaults.speedMin,

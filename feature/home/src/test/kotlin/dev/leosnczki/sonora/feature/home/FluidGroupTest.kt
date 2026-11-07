@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import kotlin.test.assertEquals
@@ -85,12 +86,12 @@ class FluidGroupTest {
 
     @Test
     fun in_cover_the_orientation_switches_show_and_change_the_setting() {
-        show(SonoraSettings.Default.copy(fluidStyle = FluidStyle.Cover, coverMirrorHorizontal = true))
+        show(SonoraSettings.Default.copy(fluidStyle = FluidStyle.Cover, coverOrientation = CoverOrientation(flipVertical = false, mirrorHorizontal = true)))
 
         compose.onNodeWithText("Mirror horizontal").performScrollTo()
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
         compose.onNodeWithText("Flip vertical").performScrollTo().performClick()
-        compose.onNodeWithText("Mirror horizontal").performClick()
+        compose.onNodeWithText("Mirror horizontal").performScrollTo().performClick()
 
         assertEquals(listOf("flip=true", "mirror=false"), calls)
     }

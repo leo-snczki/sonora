@@ -55,13 +55,13 @@ private fun CoverOrientationSwitches(settings: SonoraSettings, actions: HomeActi
     SwitchRow(
         label = stringResource(R.string.cover_flip_vertical),
         supporting = stringResource(R.string.cover_flip_vertical_desc),
-        checked = settings.coverFlipVertical,
+        checked = settings.coverOrientation.flipVertical,
         onCheckedChange = actions::setCoverFlipVertical,
     )
     SwitchRow(
         label = stringResource(R.string.cover_mirror_horizontal),
         supporting = stringResource(R.string.cover_mirror_horizontal_desc),
-        checked = settings.coverMirrorHorizontal,
+        checked = settings.coverOrientation.mirrorHorizontal,
         onCheckedChange = actions::setCoverMirrorHorizontal,
     )
 }

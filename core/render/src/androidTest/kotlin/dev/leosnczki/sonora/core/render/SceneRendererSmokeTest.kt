@@ -136,63 +136,50 @@ class SceneRendererSmokeTest {
         assertTrue(maxDistanceFrom(Color.rgb(237, 0, 18), 640, 400) <= 3, "one step from red towards blue")
     }
 
-    /** Top half red, bottom half blue, as an Android bitmap (row 0 is the top). */
-    private fun redTopBlueBottom() = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
-        for (y in 0 until 64) for (x in 0 until 64) setPixel(x, y, if (y < 32) Color.RED else Color.BLUE)
+    /** An Android bitmap (row 0 is the top) red on one half and blue on the other. */
+    private fun halves(redOnTop: Boolean = false, redOnLeft: Boolean = false) = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
+        for (y in 0 until 64) for (x in 0 until 64) {
+            val red = if (redOnTop) y < 32 else if (redOnLeft) x < 32 else false
+            setPixel(x, y, if (red) Color.RED else Color.BLUE)
+        }
     }
 
-    /** Average red minus average blue over rows [from] until [to], counted from the top of the screen. */
-    private fun redness(width: Int, height: Int, from: Int, to: Int): Float {
+    /** Average red minus average blue over a band of the screen, as seen (row 0 at the top). */
+    private fun redness(width: Int, height: Int, rows: IntRange = 0 until height, columns: IntRange = 0 until width): Float {
         val buffer = readPixels(width, height)
         var sum = 0L
-        for (row in from until to) {
-            val glRow = height - 1 - row // glReadPixels starts at the bottom
-            for (x in 0 until width) {
-                val i = (glRow * width + x) * 4
-                sum += (buffer.get(i).toInt() and 0xFF) - (buffer.get(i + 2).toInt() and 0xFF)
-            }
+        for (row in rows) for (x in columns) {
+            val i = ((height - 1 - row) * width + x) * 4 // glReadPixels starts at the bottom
+            sum += (buffer.get(i).toInt() and 0xFF) - (buffer.get(i + 2).toInt() and 0xFF)
         }
-        return sum.toFloat() / ((to - from) * width)
+        return sum.toFloat() / (rows.count() * columns.count())
     }
 
     @Test
     fun cover_shows_the_top_of_the_album_art_at_the_top_of_the_screen() {
-        renderAt(256, 256, style = FluidStyle.Cover, image = redTopBlueBottom())
+        renderAt(256, 256, style = FluidStyle.Cover, image = halves(redOnTop = true))
 
-        assertTrue(redness(256, 256, from = 0, to = 26) > 100, "red on top")
-        assertTrue(redness(256, 256, from = 230, to = 256) < -100, "blue at the bottom")
+        assertTrue(redness(256, 256, rows = 0 until 26) > 100, "red on top")
+        assertTrue(redness(256, 256, rows = 230 until 256) < -100, "blue at the bottom")
     }
 
     @Test
     fun flip_vertical_turns_cover_upside_down() {
-        renderAt(256, 256, image = redTopBlueBottom(), orientation = CoverOrientation(flipVertical = true, mirrorHorizontal = false))
+        renderAt(256, 256, image = halves(redOnTop = true), orientation = CoverOrientation(flipVertical = true, mirrorHorizontal = false))
 
-        assertTrue(redness(256, 256, from = 0, to = 26) < -100, "blue on top")
-        assertTrue(redness(256, 256, from = 230, to = 256) > 100, "red at the bottom")
-    }
-
-    /** Average red minus average blue over columns [from] until [to], counted from the left. */
-    private fun rednessOfColumns(width: Int, height: Int, from: Int, to: Int): Float {
-        val buffer = readPixels(width, height)
-        var sum = 0L
-        for (y in 0 until height) for (x in from until to) {
-            val i = (y * width + x) * 4
-            sum += (buffer.get(i).toInt() and 0xFF) - (buffer.get(i + 2).toInt() and 0xFF)
-        }
-        return sum.toFloat() / ((to - from) * height)
+        assertTrue(redness(256, 256, rows = 0 until 26) < -100, "blue on top")
+        assertTrue(redness(256, 256, rows = 230 until 256) > 100, "red at the bottom")
     }
 
     @Test
     fun mirror_horizontal_swaps_cover_left_and_right() {
-        val redLeftBlueRight = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply {
-            for (y in 0 until 64) for (x in 0 until 64) setPixel(x, y, if (x < 32) Color.RED else Color.BLUE)
-        }
+        val redLeftBlueRight = halves(redOnLeft = true)
         renderAt(256, 256, image = redLeftBlueRight)
-        assertTrue(rednessOfColumns(256, 256, from = 0, to = 26) > 100, "upright: red on the left")
+        assertTrue(redness(256, 256, columns = 0 until 26) > 100, "upright: red on the left")
 
         renderAt(256, 256, image = redLeftBlueRight, orientation = CoverOrientation(flipVertical = false, mirrorHorizontal = true))
-        assertTrue(rednessOfColumns(256, 256, from = 0, to = 26) < -100, "mirrored: blue on the left")
-        assertTrue(rednessOfColumns(256, 256, from = 230, to = 256) > 100, "mirrored: red on the right")
+        assertTrue(redness(256, 256, columns = 0 until 26) < -100, "mirrored: blue on the left")
+        assertTrue(redness(256, 256, columns = 230 until 256) > 100, "mirrored: red on the right")
     }
 
     private companion object {
