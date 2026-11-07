@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -37,25 +36,32 @@ class SonoraWallpaperService : WallpaperService() {
     private val backdropImages = mutableMapOf<BackdropId, Bitmap>()
 
     private fun backdropImage(id: BackdropId): Bitmap = synchronized(backdropImages) {
-        val backdrop = Backdrops.builtin(id) ?: Backdrops.Builtin.first()
+        val backdrop = Backdrops.resolve(id)
         backdropImages.getOrPut(backdrop.id) { BackdropImage.create(backdrop) }
     }
 
-    /** The Album Art saved by the last run, read once per process off the main thread. */
-    private val savedArt = MutableStateFlow<ArtId?>(null)
-    private var savedArtRead = false
+    /** Owns work that outlives one engine, such as reading the saved Album Art. */
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private fun readSavedArtOnce() {
-        if (savedArtRead) return
-        savedArtRead = true
-        CoroutineScope(Dispatchers.IO).launch { savedArt.value = lastAlbumArt.load() }
+    override fun onCreate() {
+        super.onCreate()
+        // The Album Art saved by the last run, read once per process off the main thread.
+        serviceScope.launch(Dispatchers.IO) { lastAlbumArt.load() }
     }
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
+    }
+
+    /** Album Art from the store, or the saved one read at start, which the store may have let go. */
+    private fun artImage(id: ArtId): Bitmap? = nowPlaying.art(id) ?: lastAlbumArt.bitmap(id)
 
     override fun onCreateEngine(): Engine = SonoraEngine()
 
     private inner class SonoraEngine : Engine() {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-        private val scene = NowPlayingScene(artFor = nowPlaying::art, backdropFor = ::backdropImage, pulseAt = { beats.pulse.frame(it) })
+        private val scene = NowPlayingScene(artFor = ::artImage, backdropFor = ::backdropImage, pulseAt = { beats.pulse.frame(it) })
         private val loop = RenderLoop(scene, resources.displayMetrics.density)
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
@@ -67,9 +73,8 @@ class SonoraWallpaperService : WallpaperService() {
                     loop.poke()
                 }
             }
-            readSavedArtOnce()
             scope.launch {
-                combine(settings.settings, savedArt) { value, saved -> value to saved }.collect { (value, saved) ->
+                combine(settings.settings, lastAlbumArt.saved) { value, saved -> value to saved }.collect { (value, saved) ->
                     scene.setPictureRules(value.effectiveAlbumArtKeep, saved, value.backdrop)
                     loop.poke()
                 }
