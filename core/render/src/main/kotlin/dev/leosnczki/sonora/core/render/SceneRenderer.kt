@@ -31,7 +31,7 @@ data class SceneFrame(
  * the context.
  * - Cover: warp the image into a small target, blur it with a few Kawase passes, then draw it to
  *   the screen.
- * - Flow, ported from the original (ADR 0003): once per image, shrink it to 192px and blur it
+ * - Flow, ported from the original (ADR-0003): once per image, shrink it to 192px and blur it
  *   heavily; each frame, walk the shown colours a step towards it, read them through the fbm
  *   field at the screen size over the density, then draw that to the screen with one light blur
  *   tap.
@@ -97,23 +97,34 @@ class SceneRenderer {
      */
     private fun prepareFlowImage(bitmap: Bitmap?) {
         val small = bitmap?.let {
-            Bitmap.createScaledBitmap(Bitmap.createScaledBitmap(it, 512, 512, true), FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE, false)
+            val squashed = Bitmap.createScaledBitmap(it, FLOW_SQUASH_SIZE, FLOW_SQUASH_SIZE, true)
+            Bitmap.createScaledBitmap(squashed, FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE, false)
         }
         upload(flowSource, small)
         GLES30.glBindVertexArray(vertexArray)
         GLES30.glDisable(GLES30.GL_BLEND)
+        flowImageIndex = blur(flowSource, flowImage, FLOW_IMAGE_BLUR_DISTANCES, firstDestination = 0)
+    }
+
+    /**
+     * Kawase passes at [distances], from [source] into the [pair] of same-sized targets in turn,
+     * starting with [firstDestination]. Returns the index in [pair] of the target with the result.
+     */
+    private fun blur(source: Int, pair: Array<RenderTarget>, distances: FloatArray, firstDestination: Int): Int {
         GLES30.glUseProgram(kawase)
-        var source = flowSource
-        FLOW_IMAGE_BLUR_DISTANCES.forEachIndexed { pass, distance ->
-            val destination = pass % 2
-            flowImage[destination].bind()
-            Gl.bindTexture(kawase, "uSource", source, unit = 0)
-            GLES30.glUniform2f(Gl.uniform(kawase, "uTexel"), 1f / FLOW_IMAGE_SIZE, 1f / FLOW_IMAGE_SIZE)
+        var texture = source
+        var destination = firstDestination
+        distances.forEach { distance ->
+            val target = pair[destination]
+            target.bind()
+            Gl.bindTexture(kawase, "uSource", texture, unit = 0)
+            GLES30.glUniform2f(Gl.uniform(kawase, "uTexel"), 1f / target.width, 1f / target.height)
             GLES30.glUniform1f(Gl.uniform(kawase, "uDistance"), distance)
             GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
-            source = flowImage[destination].texture
-            flowImageIndex = destination
+            texture = target.texture
+            destination = 1 - destination
         }
+        return 1 - destination
     }
 
     private fun aspectOf(bitmap: Bitmap?) = if (bitmap == null) 1f else bitmap.width.toFloat() / bitmap.height
@@ -134,8 +145,7 @@ class SceneRenderer {
     fun resize(width: Int, height: Int, density: Float = 1f) {
         this.width = max(1, width)
         this.height = max(1, height)
-        // The original's fallback for odd densities.
-        this.density = if (density < 1f) 2.5f else density
+        this.density = if (density < 1f) FLOW_FALLBACK_DENSITY else density
         targets.forEach { it.release() }
         flowTarget?.release()
         // The fluid is soft: a quarter of the screen resolution is plenty.
@@ -174,7 +184,7 @@ class SceneRenderer {
         Gl.bindTexture(flowNoise, "uImage", flowShown[flowShownIndex].texture, unit = 0)
         GLES30.glUniform1f(Gl.uniform(flowNoise, "uTime"), frame.phase)
         GLES30.glUniform2f(Gl.uniform(flowNoise, "uResolution"), fluid.width.toFloat(), fluid.height.toFloat())
-        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), frame.scale.coerceIn(0f, 1f) * 1.2f + 0.4f)
+        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), flowScale(frame.scale))
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
@@ -189,7 +199,6 @@ class SceneRenderer {
     }
 
     private fun drawCover(frame: SceneFrame) {
-
         // 1. Fluid warp into target 0.
         val screenAspect = width.toFloat() / height
         targets[0].bind()
@@ -204,17 +213,7 @@ class SceneRenderer {
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
         // 2. Kawase blur, ping-ponging between the two targets.
-        GLES30.glUseProgram(kawase)
-        var source = 0
-        BLUR_DISTANCES.forEach { distance ->
-            val destination = 1 - source
-            targets[destination].bind()
-            Gl.bindTexture(kawase, "uSource", targets[source].texture, unit = 0)
-            GLES30.glUniform2f(Gl.uniform(kawase, "uTexel"), 1f / targets[source].width, 1f / targets[source].height)
-            GLES30.glUniform1f(Gl.uniform(kawase, "uDistance"), distance)
-            GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
-            source = destination
-        }
+        val source = blur(targets[0].texture, targets, BLUR_DISTANCES, firstDestination = 1)
 
         // 3. To the screen.
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
@@ -245,6 +244,15 @@ class SceneRenderer {
     private companion object {
         val BLUR_DISTANCES = floatArrayOf(0f, 1f, 2f, 2f, 3f)
         const val FLOW_IMAGE_SIZE = 192
+
+        /** The original first squashes the image to this square, filtered, then shrinks it unfiltered. */
+        const val FLOW_SQUASH_SIZE = 512
+
+        /** The original's density for displays that report less than 1. */
+        const val FLOW_FALLBACK_DENSITY = 2.5f
+
+        /** The original's mapping from the 0..1 scale setting to how wide a window of the image is read. */
+        fun flowScale(scale: Float) = scale.coerceIn(0f, 1f) * 1.2f + 0.4f
         val FLOW_IMAGE_BLUR_DISTANCES = floatArrayOf(0f, 2f, 2f, 4f, 4f, 6f, 6f, 8f)
     }
 }

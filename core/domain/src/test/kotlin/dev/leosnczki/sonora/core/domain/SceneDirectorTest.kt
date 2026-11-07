@@ -112,6 +112,13 @@ class SceneDirectorTest {
         assertEquals(0f, frame.crossfade, 0.01f)
     }
 
+    @Test
+    fun the_scene_is_drawn_in_the_chosen_fluid_style() {
+        director.setFluid(FluidSettings.defaultsFor(FluidStyle.Cover))
+
+        assertEquals(FluidStyle.Cover, director.frame(atMillis = 0).style)
+    }
+
     /** Total distance Flow's colours may travel over one second, drawn at [fps]. */
     private fun flowTravelOverOneSecond(fps: Int): Float {
         val director = SceneDirector()

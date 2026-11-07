@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.opengl.GLES30
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import java.nio.ByteBuffer
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.test.assertEquals
@@ -15,8 +15,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Local only (needs a GPU): the real pipeline covers the whole surface, at a small size and at
- * the reference tablet's size, and survives a resize.
+ * Local only (needs a GPU): both styles' pipelines cover the whole surface, at a small size and
+ * at the reference tablet's size, and survive a resize; Flow shows the image's colours and walks
+ * them to a new image.
  */
 @RunWith(AndroidJUnit4::class)
 class SceneRendererSmokeTest {
