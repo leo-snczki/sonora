@@ -173,7 +173,7 @@ class SceneDirectorTest {
 
     @Test
     fun choosing_another_backdrop_crossfades_to_it() {
-        val lagoon = BackdropId("lagoon")
+        val lagoon = BackdropId("builtin:lagoon")
         director.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = lagoon, atMillis = 5_000)
 
         assertEquals(Picture.Backdrop(lagoon), director.frame(atMillis = 5_000).currentPicture)
