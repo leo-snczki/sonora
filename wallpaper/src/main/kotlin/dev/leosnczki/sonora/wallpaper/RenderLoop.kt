@@ -29,9 +29,10 @@ interface WallpaperScene {
 
 /**
  * One GL thread per wallpaper engine. Draws only while visible and attached to a surface,
- * paced by the display's vsync and throttled to the scene's target frame rate.
+ * paced by the display's vsync and throttled to the scene's target frame rate. [density] is the
+ * display's, for render targets sized in dp.
  */
-class RenderLoop(private val scene: WallpaperScene) : Choreographer.FrameCallback {
+class RenderLoop(private val scene: WallpaperScene, private val density: Float) : Choreographer.FrameCallback {
     private val thread = HandlerThread("sonora-render").apply { start() }
     private val handler = Handler(thread.looper)
     private lateinit var choreographer: Choreographer
@@ -57,7 +58,7 @@ class RenderLoop(private val scene: WallpaperScene) : Choreographer.FrameCallbac
     }
 
     fun resize(width: Int, height: Int) = post {
-        renderer?.resize(width, height)
+        renderer?.resize(width, height, density)
         schedule()
     }
 

@@ -4,15 +4,25 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-/** How the fluid moves. Speeds are in the scene's own units; [scale] runs from calm (0) to turbulent (1). */
-data class FluidSettings(val scale: Float, val speedMin: Float, val speedMax: Float) {
+/** How the fluid turns the image into the wallpaper. */
+enum class FluidStyle {
+    /** The image dissolves into a flowing fluid of its own colours. */
+    Flow,
+
+    /** The image stays recognisable, distorted by the fluid. */
+    Cover,
+}
+
+/** How the fluid looks and moves. Speeds are in the scene's own units; [scale] runs from calm (0) to turbulent (1). */
+data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: Float, val speedMax: Float) {
     companion object {
-        val Default = FluidSettings(scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f)
+        val Default = FluidSettings(style = FluidStyle.Flow, scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f)
     }
 }
 
 /** What the wallpaper should draw at one moment. */
 data class SceneState(
+    val style: FluidStyle,
     val currentArt: ArtId?,
     val previousArt: ArtId?,
     /** 0 shows [previousArt], 1 shows [currentArt]. */
@@ -84,7 +94,7 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
             playing || fading -> 60
             else -> 30
         }
-        return SceneState(current, previous, crossfade, phase, speed, fluid.scale, fps)
+        return SceneState(fluid.style, current, previous, crossfade, phase, speed, fluid.scale, fps)
     }
 
     private fun fadeProgress(atMillis: Long): Float =

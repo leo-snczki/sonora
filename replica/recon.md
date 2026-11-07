@@ -23,6 +23,10 @@ resources (layouts, strings) is inspection, not decompilation, but it is still
 the app's own material. Use it only as a map of **what** exists. Never copy
 copy text, drawables, fonts or shaders into the clone.
 
+**Exception (2026-11-07, ADR-0003):** for the Flow Fluid Style the user chose
+to port the original's renderer, so its shaders and the renderer class were
+read (jadx) and ported. Everything else stays under the rule above.
+
 ## Sources
 
 | # | source | location | notes |
@@ -201,6 +205,7 @@ See `features.csv`. Must: 14, should: 12, could: 8, skip: 7.
 - Product Sans: a proprietary Google font. Pick an open one.
 - The shaders in `assets/` and the bundled `album.jpg` / `rand.png`: write the
   effects from scratch (domain warping and Kawase blur are public techniques).
+  Exception: Flow ports the noise, pre-blur and final-tap shaders (ADR-0003).
 - Preset palette images (Aurora, Fire...), the curated playlist art and the
   translations.
 - Anti-piracy check (pairip license check) and the "pirate notice": not a

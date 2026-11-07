@@ -1,10 +1,15 @@
 package dev.leosnczki.sonora.core.render
 
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.opengl.GLES30
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.nio.ByteBuffer
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import java.nio.ByteOrder
+import kotlin.math.abs
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,19 +30,30 @@ class SceneRendererSmokeTest {
         egl.release()
     }
 
-    private fun renderAt(width: Int, height: Int, phase: Float = 0f) {
+    private fun renderAt(
+        width: Int,
+        height: Int,
+        phase: Float = 0f,
+        style: FluidStyle = FluidStyle.Cover,
+        image: Bitmap = TestImage.create(128),
+    ) {
         egl.releaseSurface(surface)
         surface = egl.createOffscreenSurface(width, height)
         egl.makeCurrent(surface)
-        renderer.setImages(current = TestImage.create(128), previous = null)
-        renderer.resize(width, height)
-        renderer.draw(SceneFrame.Still.copy(phase = phase))
+        renderer.setImages(current = image, previous = null)
+        renderer.resize(width, height, density = TABLET_DENSITY)
+        renderer.draw(SceneFrame.Still.copy(phase = phase, style = style))
+    }
+
+    private fun readPixels(width: Int, height: Int): ByteBuffer {
+        val buffer = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder())
+        GLES30.glReadPixels(0, 0, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buffer)
+        return buffer
     }
 
     /** Pixels that are pure black, i.e. that the final pass never wrote. */
     private fun blackPixels(width: Int, height: Int): Int {
-        val buffer = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder())
-        GLES30.glReadPixels(0, 0, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buffer)
+        val buffer = readPixels(width, height)
         var black = 0
         for (i in 0 until width * height) {
             val r = buffer.get(i * 4).toInt() and 0xFF
@@ -46,6 +62,21 @@ class SceneRendererSmokeTest {
             if (r + g + b < 6) black++
         }
         return black
+    }
+
+    /** The largest difference of any channel of any pixel from [color]. */
+    private fun maxDistanceFrom(color: Int, width: Int, height: Int): Int {
+        val buffer = readPixels(width, height)
+        var worst = 0
+        for (i in 0 until width * height) {
+            worst = maxOf(
+                worst,
+                abs((buffer.get(i * 4).toInt() and 0xFF) - Color.red(color)),
+                abs((buffer.get(i * 4 + 1).toInt() and 0xFF) - Color.green(color)),
+                abs((buffer.get(i * 4 + 2).toInt() and 0xFF) - Color.blue(color)),
+            )
+        }
+        return worst
     }
 
     @Test
@@ -65,5 +96,33 @@ class SceneRendererSmokeTest {
         renderAt(256, 256)
         renderAt(1840, 2944, phase = 3f)
         assertEquals(0, blackPixels(1840, 2944))
+    }
+
+    @Test
+    fun flow_covers_every_pixel_of_the_reference_tablet_screen() {
+        renderAt(2944, 1840, phase = 7f, style = FluidStyle.Flow)
+        assertEquals(0, blackPixels(2944, 1840))
+    }
+
+    @Test
+    fun flow_still_covers_everything_after_a_resize_to_portrait() {
+        renderAt(256, 256, style = FluidStyle.Flow)
+        renderAt(1840, 2944, phase = 3f, style = FluidStyle.Flow)
+        assertEquals(0, blackPixels(1840, 2944))
+    }
+
+    @Test
+    fun flow_of_a_single_colour_album_art_is_that_colour() {
+        val terracotta = Color.rgb(200, 90, 40)
+        val solid = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply { eraseColor(terracotta) }
+
+        renderAt(640, 400, phase = 5f, style = FluidStyle.Flow, image = solid)
+
+        assertTrue(maxDistanceFrom(terracotta, 640, 400) <= 2, "only the dither may move it")
+    }
+
+    private companion object {
+        /** The reference tablet's display density (340 dpi). */
+        const val TABLET_DENSITY = 340f / 160f
     }
 }
