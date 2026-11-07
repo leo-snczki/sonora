@@ -219,7 +219,9 @@ class SceneRenderer {
         Gl.bindTexture(flowNoise, "uImage", flowShown[flowShownIndex].texture, unit = 0)
         GLES30.glUniform1f(Gl.uniform(flowNoise, "uTime"), frame.phase)
         GLES30.glUniform2f(Gl.uniform(flowNoise, "uResolution"), fluid.width.toFloat(), fluid.height.toFloat())
-        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), flowScale(frame.scale) + frame.pulse)
+        // As in the original the pulse adds to the window of the image that is read; kept within
+        // bounds, since treble can pull it below zero (which would flip the image) and bass far out.
+        GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), (flowScale(frame.scale) + frame.pulse).coerceIn(FLOW_SCALE_MIN, FLOW_SCALE_MAX))
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
 
         if (frame.effect == GraphicsEffect.FlutedGlass) return drawFlutedGlass(fluid.texture)
@@ -302,6 +304,10 @@ class SceneRenderer {
 
         /** The original's density for displays that report less than 1. */
         const val FLOW_FALLBACK_DENSITY = 2.5f
+
+        /** Bounds for Flow's scale with the pulse added: the slider's own range, with room to swell. */
+        const val FLOW_SCALE_MIN = 0.2f
+        const val FLOW_SCALE_MAX = 3f
 
         /** The original's brightness multiply, applied in each pass: ×(1 + 0.05·b). */
         fun flowGain(brightness: Float) = 1f + brightness * 0.05f

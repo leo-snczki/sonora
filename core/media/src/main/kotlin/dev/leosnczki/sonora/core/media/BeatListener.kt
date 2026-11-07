@@ -45,8 +45,10 @@ class BeatListener(
     val playerSilent: StateFlow<Boolean> = _playerSilent.asStateFlow()
 
     private val visibleEngines = mutableSetOf<Any>()
-    private var strength = 0f
     private var open: AutoCloseable? = null
+
+    /** The tap could not be opened: don't try again until listening stops being wanted. */
+    private var failed = false
 
     @Synchronized
     fun setVisible(engine: Any, visible: Boolean) {
@@ -56,7 +58,6 @@ class BeatListener(
 
     @Synchronized
     fun setStrength(strength: Float) {
-        this.strength = strength
         pulse.setStrength(strength)
         update()
     }
@@ -64,18 +65,24 @@ class BeatListener(
     /** Call when audio access may have changed. */
     @Synchronized
     fun update() {
-        val wanted = visibleEngines.isNotEmpty() && strength > 0f && hasPermission()
-        if (wanted && open == null) {
+        val wanted = visibleEngines.isNotEmpty() && pulse.strength > 0f && hasPermission()
+        if (!wanted) failed = false
+        if (wanted && open == null && !failed) {
             open = runCatching { tap.open(::onFft) }.getOrNull()
+            failed = open == null
         } else if (!wanted && open != null) {
             runCatching { open?.close() }
             open = null
             pulse.onBands(FloatArray(4))
+            silence.reset()
             _playerSilent.value = false
         }
     }
 
+    @Synchronized
     private fun onFft(fft: ByteArray, samplingRateMilliHz: Int) {
+        // A capture already on its way when the tap closed must not undo the reset.
+        if (open == null) return
         val bands = runCatching { BeatBands.from(fft, samplingRateMilliHz) }.getOrNull() ?: return
         pulse.onBands(bands)
         _playerSilent.value = silence.onBands(bands, isPlaying(), clock())
