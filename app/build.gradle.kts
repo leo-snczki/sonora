@@ -17,8 +17,20 @@ android {
         compose = true
         buildConfig = true
     }
+    signingConfigs {
+        // Release signing comes from the environment (CI secrets); without it the release build is unsigned.
+        System.getenv("SONORA_KEYSTORE")?.let { keystore ->
+            create("release") {
+                storeFile = file(keystore)
+                storePassword = System.getenv("SONORA_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SONORA_KEY_ALIAS")
+                keyPassword = System.getenv("SONORA_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
