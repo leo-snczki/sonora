@@ -1,3 +1,5 @@
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
@@ -30,6 +32,17 @@ subprojects {
     }
     plugins.withId("com.android.application") { extensions.configure<BaseExtension> { sonoraDefaults() } }
     plugins.withId("com.android.library") { extensions.configure<BaseExtension> { sonoraDefaults() } }
+    // Unit tests run on debug only: release would repeat them without the Compose test manifest.
+    plugins.withId("com.android.application") {
+        extensions.configure<ApplicationAndroidComponentsExtension> {
+            beforeVariants(selector().withBuildType("release")) { it.enableUnitTest = false }
+        }
+    }
+    plugins.withId("com.android.library") {
+        extensions.configure<LibraryAndroidComponentsExtension> {
+            beforeVariants(selector().withBuildType("release")) { it.enableUnitTest = false }
+        }
+    }
     plugins.withId("org.jetbrains.kotlin.android") {
         extensions.configure<KotlinAndroidProjectExtension> { compilerOptions.jvmTarget.set(JvmTarget.JVM_17) }
     }
