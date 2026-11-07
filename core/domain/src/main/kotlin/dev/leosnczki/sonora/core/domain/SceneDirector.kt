@@ -38,9 +38,9 @@ data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: 
 data class SceneState(
     val style: FluidStyle,
     val orientation: CoverOrientation,
-    val currentArt: ArtId?,
-    val previousArt: ArtId?,
-    /** 0 shows [previousArt], 1 shows [currentArt]. */
+    val currentPicture: Picture,
+    val previousPicture: Picture,
+    /** 0 shows [previousPicture], 1 shows [currentPicture]. */
     val crossfade: Float,
     val phase: Float,
     val speed: Float,
@@ -50,13 +50,18 @@ data class SceneState(
 )
 
 /**
- * Turns Now Playing, visibility and time into the scene each frame: crossfades between Album Art,
+ * Turns Now Playing, visibility and time into the scene each frame: crossfades between Pictures
+ * (Album Art, or the Backdrop when there is none to show),
  * runs the fluid fast while playing and eases it down when paused, and picks a frame rate.
  * One per wallpaper engine; pure, so it is driven by the timestamps it is given.
  */
 class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
-    private var current: ArtId? = null
-    private var previous: ArtId? = null
+    private var keep = AlbumArtKeep.Default
+    private var savedArt: ArtId? = null
+    private var backdrop = Backdrops.Default
+    private var nowPlaying: NowPlaying? = null
+    private var current: Picture = pictureFor(null, keep, savedArt, backdrop)
+    private var previous: Picture = current
     private var fadeStartedAt = Long.MIN_VALUE / 2 // long ago: settled, and no overflow when subtracted
     private var playing = false
     private var visible = false
@@ -79,25 +84,35 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         this.orientation = orientation
     }
 
+    /** The Album Art group and the chosen Backdrop: what to show when there is no music to show. */
+    fun setPictureRules(keep: AlbumArtKeep, savedArt: ArtId?, backdrop: BackdropId, atMillis: Long) {
+        this.keep = keep
+        this.savedArt = savedArt
+        this.backdrop = backdrop
+        show(pictureFor(nowPlaying, keep, savedArt, backdrop), atMillis)
+    }
+
     fun onNowPlaying(nowPlaying: NowPlaying?, atMillis: Long) {
+        this.nowPlaying = nowPlaying
         val nowPlayingState = nowPlaying?.playing == true
         if (nowPlayingState != playing) {
             speedAtChange = speedAt(atMillis)
             playingChangedAt = atMillis
             playing = nowPlayingState
         }
-        val art = nowPlaying?.art
-        if (art != current) {
-            val progress = fadeProgress(atMillis)
-            if (progress < 0.5f) {
-                // The outgoing image is still mostly on screen: keep it and swap only the faint
-                // incoming one, so the fade carries on without a visible jump.
-                current = art
-            } else {
-                previous = current
-                current = art
-                fadeStartedAt = atMillis
-            }
+        show(pictureFor(nowPlaying, keep, savedArt, backdrop), atMillis)
+    }
+
+    private fun show(picture: Picture, atMillis: Long) {
+        if (picture == current) return
+        if (fadeProgress(atMillis) < 0.5f) {
+            // The outgoing image is still mostly on screen: keep it and swap only the faint
+            // incoming one, so the fade carries on without a visible jump.
+            current = picture
+        } else {
+            previous = current
+            current = picture
+            fadeStartedAt = atMillis
         }
     }
 

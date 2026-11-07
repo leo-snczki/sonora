@@ -1,5 +1,6 @@
 package dev.leosnczki.sonora.feature.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import dev.leosnczki.sonora.core.designsystem.SonoraSize
 import dev.leosnczki.sonora.core.designsystem.SonoraSpace
@@ -33,6 +37,9 @@ import dev.leosnczki.sonora.core.domain.SetupStepState
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import dev.leosnczki.sonora.core.domain.setupSteps
 
+/** Tags the Backdrop the screen draws behind itself when Sonora is not the wallpaper. */
+internal const val BACKDROP_TAG = "backdrop"
+
 /** Everything the settings screen shows. Filled by [HomeViewModel] in the app. */
 data class HomeScreenState(
     val versionName: String,
@@ -46,6 +53,8 @@ data class HomeScreenState(
     val audioAccess: Boolean = false,
     /** Music plays but Beat Pulse hears nothing: the Player can't be heard. */
     val playerSilent: Boolean = false,
+    /** The Backdrop's colours to draw behind the screen when Sonora is not the wallpaper; null shows the wallpaper through. */
+    val backdropBehind: List<Int>? = null,
 ) {
     companion object {
         val Preview = HomeScreenState(
@@ -80,6 +89,9 @@ interface HomeActions {
     fun setBrightness(brightness: Float) {}
     fun setBeatOverride(enabled: Boolean) {}
     fun setBeatStrength(strength: Float) {}
+    fun setAlbumArtOverride(enabled: Boolean) {}
+    fun setKeepAfterPause(enabled: Boolean) {}
+    fun setKeepAfterReboot(enabled: Boolean) {}
     fun openProjectPage() {}
     fun openLicences() {}
 
@@ -89,7 +101,10 @@ interface HomeActions {
 @Composable
 fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier = Modifier) {
     SonoraTheme {
-        PageScrim(modifier) {
+        val behind = state.backdropBehind?.let { colours ->
+            modifier.testTag(BACKDROP_TAG).background(Brush.linearGradient(colours.map(::Color)))
+        } ?: modifier
+        PageScrim(behind) {
             BoxWithConstraints(
                 Modifier
                     .fillMaxSize()

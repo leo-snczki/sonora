@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.leosnczki.sonora.core.domain.BackdropId
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.GraphicsEffect
@@ -51,6 +52,14 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
 
     suspend fun setBeatStrength(strength: Float) = write { it[BEAT_STRENGTH] = strength.coerceIn(0f, 1f) }
 
+    suspend fun setAlbumArtOverride(enabled: Boolean) = write { it[ALBUM_ART_OVERRIDE] = enabled }
+
+    suspend fun setKeepAfterPause(enabled: Boolean) = write { it[KEEP_AFTER_PAUSE] = enabled }
+
+    suspend fun setKeepAfterReboot(enabled: Boolean) = write { it[KEEP_AFTER_REBOOT] = enabled }
+
+    suspend fun setBackdrop(backdrop: BackdropId) = write { it[BACKDROP] = backdrop.value }
+
     suspend fun markSetupCompleted() = write { it[SETUP_COMPLETED_ONCE] = true }
 
     private suspend fun write(change: (MutablePreferences) -> Unit) {
@@ -76,6 +85,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
             brightness = this[BRIGHTNESS] ?: defaults.brightness,
             beatOverride = this[BEAT_OVERRIDE] ?: defaults.beatOverride,
             beatStrength = this[BEAT_STRENGTH] ?: defaults.beatStrength,
+            albumArtOverride = this[ALBUM_ART_OVERRIDE] ?: defaults.albumArtOverride,
+            keepAfterPause = this[KEEP_AFTER_PAUSE] ?: defaults.keepAfterPause,
+            keepAfterReboot = this[KEEP_AFTER_REBOOT] ?: defaults.keepAfterReboot,
+            backdrop = this[BACKDROP]?.let(::BackdropId) ?: defaults.backdrop,
             setupCompletedOnce = this[SETUP_COMPLETED_ONCE] ?: defaults.setupCompletedOnce,
         )
     }
@@ -94,6 +107,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         val BRIGHTNESS = floatPreferencesKey("brightness")
         val BEAT_OVERRIDE = booleanPreferencesKey("beat_override")
         val BEAT_STRENGTH = floatPreferencesKey("beat_strength")
+        val ALBUM_ART_OVERRIDE = booleanPreferencesKey("album_art_override")
+        val KEEP_AFTER_PAUSE = booleanPreferencesKey("keep_after_pause")
+        val KEEP_AFTER_REBOOT = booleanPreferencesKey("keep_after_reboot")
+        val BACKDROP = stringPreferencesKey("backdrop")
         val SETUP_COMPLETED_ONCE = booleanPreferencesKey("setup_completed_once")
     }
 }

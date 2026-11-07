@@ -93,4 +93,17 @@ class SonoraSettingsTest {
     fun beat_strength_starts_where_the_original_does() {
         assertEquals(0.5f, SonoraSettings.Default.beatStrength)
     }
+
+    @Test
+    fun with_the_album_art_group_off_nothing_is_kept() {
+        val settings = SonoraSettings.Default.copy(keepAfterPause = true, keepAfterReboot = true)
+
+        assertEquals(AlbumArtKeep.Default, settings.effectiveAlbumArtKeep)
+        assertEquals(AlbumArtKeep(afterPause = true, afterReboot = true), settings.copy(albumArtOverride = true).effectiveAlbumArtKeep)
+    }
+
+    @Test
+    fun a_fresh_install_shows_the_first_built_in_backdrop() {
+        assertEquals(Backdrops.Builtin.first().id, SonoraSettings.Default.backdrop)
+    }
 }

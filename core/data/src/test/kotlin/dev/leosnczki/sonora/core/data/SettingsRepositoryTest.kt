@@ -1,6 +1,8 @@
 package dev.leosnczki.sonora.core.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import dev.leosnczki.sonora.core.domain.AlbumArtKeep
+import dev.leosnczki.sonora.core.domain.BackdropId
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.GraphicsEffect
@@ -102,6 +104,23 @@ class SettingsRepositoryTest {
         firstRun.cancelAndJoin()
 
         assertEquals(0.7f, repository(backgroundScope, file).settings.first().effectiveBeatStrength)
+    }
+
+    @Test
+    fun the_album_art_group_and_the_chosen_backdrop_survive_a_restart() = runTest(UnconfinedTestDispatcher()) {
+        val file = File(folder.root, "album.preferences_pb")
+        val firstRun = Job()
+        repository(CoroutineScope(coroutineContext + firstRun), file).apply {
+            setAlbumArtOverride(true)
+            setKeepAfterPause(true)
+            setKeepAfterReboot(true)
+            setBackdrop(BackdropId("lagoon"))
+        }
+        firstRun.cancelAndJoin()
+
+        val restored = repository(backgroundScope, file).settings.first()
+        assertEquals(AlbumArtKeep(afterPause = true, afterReboot = true), restored.effectiveAlbumArtKeep)
+        assertEquals(BackdropId("lagoon"), restored.backdrop)
     }
 
     @Test

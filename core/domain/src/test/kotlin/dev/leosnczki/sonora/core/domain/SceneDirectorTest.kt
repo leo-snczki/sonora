@@ -17,8 +17,8 @@ class SceneDirectorTest {
         director.onNowPlaying(playing("b"), atMillis = 10_000)
 
         val start = director.frame(atMillis = 10_000)
-        assertEquals(ArtId("b"), start.currentArt)
-        assertEquals(ArtId("a"), start.previousArt)
+        assertEquals(Picture.Art(ArtId("b")), start.currentPicture)
+        assertEquals(Picture.Art(ArtId("a")), start.previousPicture)
         assertEquals(0f, start.crossfade, 0.001f)
         assertEquals(0.5f, director.frame(atMillis = 10_750).crossfade, 0.001f)
         assertEquals(1f, director.frame(atMillis = 11_500).crossfade, 0.001f)
@@ -33,7 +33,7 @@ class SceneDirectorTest {
 
         val frame = director.frame(atMillis = 2_100)
         assertEquals(1f, frame.crossfade, 0.001f)
-        assertEquals(ArtId("a"), frame.currentArt)
+        assertEquals(Picture.Art(ArtId("a")), frame.currentPicture)
     }
 
     @Test
@@ -71,10 +71,10 @@ class SceneDirectorTest {
     }
 
     @Test
-    fun nothing_playing_shows_no_album_art() {
+    fun nothing_playing_shows_the_backdrop() {
         director.onNowPlaying(null, atMillis = 0)
 
-        assertEquals(null, director.frame(atMillis = 0).currentArt)
+        assertEquals(Picture.Backdrop(Backdrops.Default), director.frame(atMillis = 0).currentPicture)
     }
 
     @Test
@@ -94,8 +94,8 @@ class SceneDirectorTest {
         director.onNowPlaying(playing("c"), atMillis = 5_300)
 
         val frame = director.frame(atMillis = 5_300)
-        assertEquals(ArtId("a"), frame.previousArt)
-        assertEquals(ArtId("c"), frame.currentArt)
+        assertEquals(Picture.Art(ArtId("a")), frame.previousPicture)
+        assertEquals(Picture.Art(ArtId("c")), frame.currentPicture)
         assertEquals(0.2f, frame.crossfade, 0.01f)
     }
 
@@ -107,8 +107,8 @@ class SceneDirectorTest {
         director.onNowPlaying(playing("c"), atMillis = 6_200) // b is 80% in
 
         val frame = director.frame(atMillis = 6_200)
-        assertEquals(ArtId("b"), frame.previousArt)
-        assertEquals(ArtId("c"), frame.currentArt)
+        assertEquals(Picture.Art(ArtId("b")), frame.previousPicture)
+        assertEquals(Picture.Art(ArtId("c")), frame.currentPicture)
         assertEquals(0f, frame.crossfade, 0.01f)
     }
 
@@ -158,5 +158,31 @@ class SceneDirectorTest {
         // of the gap from 0.05 to 0.5 is left.
         assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 60), 0.002f)
         assertEquals(0.254f, flowSpeedOneSecondAfterPlay(fps = 120), 0.002f)
+    }
+
+    @Test
+    fun once_the_music_stops_the_backdrop_crossfades_in() {
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        director.onNowPlaying(NowPlaying("spotify", null, ArtId("a"), playing = false, stopped = true), atMillis = 20_000)
+
+        val frame = director.frame(atMillis = 20_000)
+        assertEquals(Picture.Backdrop(Backdrops.Default), frame.currentPicture)
+        assertEquals(Picture.Art(ArtId("a")), frame.previousPicture)
+        assertEquals(0f, frame.crossfade, 0.001f)
+    }
+
+    @Test
+    fun choosing_another_backdrop_crossfades_to_it() {
+        val lagoon = BackdropId("lagoon")
+        director.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = lagoon, atMillis = 5_000)
+
+        assertEquals(Picture.Backdrop(lagoon), director.frame(atMillis = 5_000).currentPicture)
+    }
+
+    @Test
+    fun keeping_the_album_art_after_a_reboot_shows_the_saved_one_before_any_music() {
+        director.setPictureRules(AlbumArtKeep(afterPause = false, afterReboot = true), savedArt = ArtId("saved"), backdrop = Backdrops.Default, atMillis = 0)
+
+        assertEquals(Picture.Art(ArtId("saved")), director.frame(atMillis = 0).currentPicture)
     }
 }

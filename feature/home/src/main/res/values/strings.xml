@@ -79,6 +79,12 @@
     <string name="beat_strength_desc">How far the fluid swells on the bass</string>
     <string name="beat_silent_title">Sonora can\'t hear this Player</string>
     <string name="beat_silent_body">Music is playing but no sound reaches Beat Pulse. Some Players keep their audio to themselves; Sonora never falls back to the microphone.</string>
+    <string name="album_art_group">Album Art</string>
+    <string name="album_art_group_desc">Choose what the wallpaper keeps instead of the defaults</string>
+    <string name="keep_after_pause">Keep after pausing</string>
+    <string name="keep_after_pause_desc">Once the music stops, keep its Album Art instead of the Backdrop</string>
+    <string name="keep_after_reboot">Keep after rebooting</string>
+    <string name="keep_after_reboot_desc">Show the last Album Art when the device starts, before any music</string>
     <string name="misc_group">Misc</string>
     <string name="misc_group_desc">Use your own brightness instead of the default</string>
     <string name="brightness">Brightness</string>

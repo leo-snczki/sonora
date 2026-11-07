@@ -1,11 +1,15 @@
 package dev.leosnczki.sonora.wallpaper
 
 import android.graphics.Bitmap
+import dev.leosnczki.sonora.core.domain.AlbumArtKeep
 import dev.leosnczki.sonora.core.domain.ArtId
+import dev.leosnczki.sonora.core.domain.BackdropId
+import dev.leosnczki.sonora.core.domain.Backdrops
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidSettings
 import dev.leosnczki.sonora.core.domain.LookSettings
 import dev.leosnczki.sonora.core.domain.NowPlaying
+import dev.leosnczki.sonora.core.domain.Picture
 import dev.leosnczki.sonora.core.domain.SceneDirector
 import dev.leosnczki.sonora.core.media.monotonicMillis
 import dev.leosnczki.sonora.core.render.SceneFrame
@@ -13,16 +17,17 @@ import dev.leosnczki.sonora.core.render.SceneFrame
 /**
  * Adapts the pure [SceneDirector] to the render loop: Now Playing and settings arrive on the
  * main thread, frames are pulled on the render thread, so access is synchronised.
- * [artFor] turns an [ArtId] into a bitmap; null art draws [fallbackImage] until #11 brings Backdrops.
+ * [artFor] turns an [ArtId] into a bitmap (null while it isn't ready: the Backdrop shows meanwhile);
+ * [backdropFor] draws a Backdrop.
  * [pulseAt] gives Beat Pulse at a time in milliseconds.
  */
 class NowPlayingScene(
     private val artFor: (ArtId) -> Bitmap?,
-    private val fallbackImage: () -> Bitmap,
+    private val backdropFor: (BackdropId) -> Bitmap,
     private val pulseAt: (Long) -> Float = { 0f },
 ) : WallpaperScene {
     private val director = SceneDirector()
-    private var uploaded: Pair<ArtId?, ArtId?>? = null
+    private var uploaded: Pair<Picture, Picture>? = null
 
     @Synchronized
     fun onNowPlaying(nowPlaying: NowPlaying?) = director.onNowPlaying(nowPlaying, monotonicMillis())
@@ -32,6 +37,15 @@ class NowPlayingScene(
 
     @Synchronized
     fun setFluid(settings: FluidSettings) = director.setFluid(settings)
+
+    /** What to show when there is no music to show: see [SceneDirector.setPictureRules]. */
+    @Synchronized
+    fun setPictureRules(keep: AlbumArtKeep, savedArt: ArtId?, backdrop: BackdropId) {
+        this.backdrop = backdrop
+        director.setPictureRules(keep, savedArt, backdrop, monotonicMillis())
+    }
+
+    private var backdrop = Backdrops.Default
 
     @Synchronized
     fun setOrientation(orientation: CoverOrientation) = director.setOrientation(orientation)
@@ -52,15 +66,22 @@ class NowPlayingScene(
      * hold up the main thread. Art that is not available yet is retried about once a second.
      */
     override fun takeImages(nanos: Long): SceneImages? {
-        val wanted = synchronized(this) { director.frame(nanos / 1_000_000).let { it.currentArt to it.previousArt } }
+        val (wanted, fallback) = synchronized(this) {
+            director.frame(nanos / 1_000_000).let { it.currentPicture to it.previousPicture } to backdrop
+        }
         if (wanted == uploaded) return null
         lastMissAt?.let { if (nanos - it < RETRY_NANOS) return null }
-        val current = wanted.first?.let(artFor)
-        val previous = wanted.second?.let(artFor)
-        val complete = (wanted.first == null || current != null) && (wanted.second == null || previous != null)
+        val current = imageOf(wanted.first)
+        val previous = imageOf(wanted.second)
+        val complete = current != null && previous != null
         lastMissAt = if (complete) null else nanos
         if (complete) uploaded = wanted
-        return SceneImages(current ?: fallbackImage(), previous ?: fallbackImage())
+        return SceneImages(current ?: backdropFor(fallback), previous ?: backdropFor(fallback))
+    }
+
+    private fun imageOf(picture: Picture): Bitmap? = when (picture) {
+        is Picture.Art -> artFor(picture.id)
+        is Picture.Backdrop -> backdropFor(picture.id)
     }
 
     /** Called once per drawn frame, which is what [SceneDirector.flowStep] counts on. */
