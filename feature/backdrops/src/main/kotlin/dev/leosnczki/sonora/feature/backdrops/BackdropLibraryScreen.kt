@@ -107,19 +107,19 @@ fun BackdropLibraryScreen(state: BackdropLibraryState, actions: BackdropLibraryA
                 }
             }
         }
-    }
-    deleting?.let { id ->
-        ConfirmDialog(
-            title = stringResource(R.string.library_delete_title),
-            body = stringResource(R.string.library_delete_body),
-            confirmLabel = stringResource(R.string.library_delete),
-            dismissLabel = stringResource(R.string.library_cancel),
-            onConfirm = {
-                deleting = null
-                actions.delete(BackdropId(id))
-            },
-            onDismiss = { deleting = null },
-        )
+        deleting?.let { id ->
+            ConfirmDialog(
+                title = stringResource(R.string.library_delete_title),
+                body = stringResource(R.string.library_delete_body),
+                confirmLabel = stringResource(R.string.library_delete),
+                dismissLabel = stringResource(R.string.library_cancel),
+                onConfirm = {
+                    deleting = null
+                    actions.delete(BackdropId(id))
+                },
+                onDismiss = { deleting = null },
+            )
+        }
     }
 }
 
