@@ -119,6 +119,14 @@ class SceneDirectorTest {
         assertEquals(FluidStyle.Cover, director.frame(atMillis = 0).style)
     }
 
+    @Test
+    fun the_scene_is_drawn_in_the_chosen_cover_orientation() {
+        val mirrored = CoverOrientation(flipVertical = false, mirrorHorizontal = true)
+        director.setFluid(FluidSettings.defaultsFor(FluidStyle.Cover).copy(orientation = mirrored))
+
+        assertEquals(mirrored, director.frame(atMillis = 0).orientation)
+    }
+
     /** Total distance Flow's colours may travel over one second, drawn at [fps]. */
     private fun flowTravelOverOneSecond(fps: Int): Float {
         val director = SceneDirector()

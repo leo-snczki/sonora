@@ -153,6 +153,10 @@ class HomeViewModel @Inject constructor(
 
     fun setFluidStyle(style: FluidStyle) = save { settings.setFluidStyle(style) }
 
+    fun setCoverFlipVertical(enabled: Boolean) = save { settings.setCoverFlipVertical(enabled) }
+
+    fun setCoverMirrorHorizontal(enabled: Boolean) = save { settings.setCoverMirrorHorizontal(enabled) }
+
     fun setFluidOverride(enabled: Boolean) = save { settings.setFluidOverride(enabled) }
 
     fun setFluidScale(scale: Float) = saveSoon("scale") { settings.setFluidScale(scale) }

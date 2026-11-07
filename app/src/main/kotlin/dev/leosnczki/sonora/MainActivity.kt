@@ -80,6 +80,10 @@ class MainActivity : ComponentActivity() {
 
         override fun setFluidStyle(style: FluidStyle) = viewModel.setFluidStyle(style)
 
+        override fun setCoverFlipVertical(enabled: Boolean) = viewModel.setCoverFlipVertical(enabled)
+
+        override fun setCoverMirrorHorizontal(enabled: Boolean) = viewModel.setCoverMirrorHorizontal(enabled)
+
         override fun setFluidOverride(enabled: Boolean) = viewModel.setFluidOverride(enabled)
 
         override fun setFluidScale(scale: Float) = viewModel.setFluidScale(scale)

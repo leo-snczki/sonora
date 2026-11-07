@@ -14,6 +14,7 @@ import dev.leosnczki.sonora.core.designsystem.component.LabeledSlider
 import dev.leosnczki.sonora.core.designsystem.component.SectionCard
 import dev.leosnczki.sonora.core.designsystem.component.SegmentedChoice
 import dev.leosnczki.sonora.core.designsystem.component.SettingGroup
+import dev.leosnczki.sonora.core.designsystem.component.SwitchRow
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import kotlin.math.roundToInt
@@ -23,6 +24,7 @@ import kotlin.math.roundToInt
 internal fun LookCard(settings: SonoraSettings, actions: HomeActions) {
     SectionCard(stringResource(R.string.look_title)) {
         FluidStyleChoice(settings.fluidStyle, actions)
+        if (settings.fluidStyle == FluidStyle.Cover) CoverOrientationSwitches(settings, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
         FluidGroup(settings, actions)
     }
@@ -43,6 +45,24 @@ private fun FluidStyleChoice(style: FluidStyle, actions: HomeActions) {
         selected = style,
         onSelect = actions::setFluidStyle,
         label = { labels.getValue(it) },
+    )
+}
+
+/** Only Cover keeps the image recognisable, so only Cover can turn it. */
+@Composable
+private fun CoverOrientationSwitches(settings: SonoraSettings, actions: HomeActions) {
+    Spacer(Modifier.height(SonoraSpace.Sm))
+    SwitchRow(
+        label = stringResource(R.string.cover_flip_vertical),
+        supporting = stringResource(R.string.cover_flip_vertical_desc),
+        checked = settings.coverFlipVertical,
+        onCheckedChange = actions::setCoverFlipVertical,
+    )
+    SwitchRow(
+        label = stringResource(R.string.cover_mirror_horizontal),
+        supporting = stringResource(R.string.cover_mirror_horizontal_desc),
+        checked = settings.coverMirrorHorizontal,
+        onCheckedChange = actions::setCoverMirrorHorizontal,
     )
 }
 

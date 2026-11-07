@@ -13,28 +13,42 @@ class SonoraSettingsTest {
 
     @Test
     fun with_the_fluid_group_on_the_users_values_apply() {
-        assertEquals(FluidSettings(style = FluidStyle.Flow, scale = 0.9f, speedMin = 0.3f, speedMax = 0.95f), custom.copy(fluidOverride = true).effectiveFluid)
+        assertEquals(FluidSettings(style = FluidStyle.Flow, scale = 0.9f, speedMin = 0.3f, speedMax = 0.95f, orientation = CoverOrientation.Upright), custom.copy(fluidOverride = true).effectiveFluid)
     }
 
     @Test
     fun with_the_fluid_group_off_flow_moves_with_the_originals_defaults() {
         val fluid = custom.copy(fluidStyle = FluidStyle.Flow, fluidOverride = false).effectiveFluid
 
-        assertEquals(FluidSettings(style = FluidStyle.Flow, scale = 0.8f, speedMin = 0.05f, speedMax = 0.5f), fluid)
+        assertEquals(FluidSettings(style = FluidStyle.Flow, scale = 0.8f, speedMin = 0.05f, speedMax = 0.5f, orientation = CoverOrientation.Upright), fluid)
     }
 
     @Test
     fun with_the_fluid_group_off_cover_keeps_its_own_defaults() {
         val fluid = custom.copy(fluidStyle = FluidStyle.Cover, fluidOverride = false).effectiveFluid
 
-        assertEquals(FluidSettings(style = FluidStyle.Cover, scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f), fluid)
+        assertEquals(FluidSettings(style = FluidStyle.Cover, scale = 0.5f, speedMin = 0.15f, speedMax = 0.6f, orientation = CoverOrientation.Upright), fluid)
     }
 
     @Test
     fun with_the_fluid_group_on_the_users_values_drive_cover_too() {
         val fluid = custom.copy(fluidStyle = FluidStyle.Cover, fluidOverride = true).effectiveFluid
 
-        assertEquals(FluidSettings(style = FluidStyle.Cover, scale = 0.9f, speedMin = 0.3f, speedMax = 0.95f), fluid)
+        assertEquals(FluidSettings(style = FluidStyle.Cover, scale = 0.9f, speedMin = 0.3f, speedMax = 0.95f, orientation = CoverOrientation.Upright), fluid)
+    }
+
+    @Test
+    fun a_fresh_install_shows_cover_the_right_way_round() {
+        assertEquals(CoverOrientation.Upright, SonoraSettings.Default.effectiveFluid.orientation)
+    }
+
+    @Test
+    fun the_cover_orientation_applies_whether_the_fluid_group_is_on_or_off() {
+        val flipped = CoverOrientation(flipVertical = true, mirrorHorizontal = true)
+        val settings = custom.copy(fluidStyle = FluidStyle.Cover, coverFlipVertical = true, coverMirrorHorizontal = true)
+
+        assertEquals(flipped, settings.copy(fluidOverride = false).effectiveFluid.orientation)
+        assertEquals(flipped, settings.copy(fluidOverride = true).effectiveFluid.orientation)
     }
 
     @Test

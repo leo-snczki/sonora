@@ -31,6 +31,8 @@ class FluidGroupTest {
         override fun setFluidScale(scale: Float) { calls += "scale=$scale" }
         override fun setSpeedRange(min: Float, max: Float) { calls += "speed=$min..$max" }
         override fun setFluidStyle(style: FluidStyle) { calls += "style=$style" }
+        override fun setCoverFlipVertical(enabled: Boolean) { calls += "flip=$enabled" }
+        override fun setCoverMirrorHorizontal(enabled: Boolean) { calls += "mirror=$enabled" }
     }
 
     private fun show(settings: SonoraSettings) = compose.setContent {
@@ -79,5 +81,25 @@ class FluidGroupTest {
         compose.onNodeWithText("Cover", ignoreCase = true).performClick()
 
         assertEquals(listOf("style=Cover"), calls)
+    }
+
+    @Test
+    fun in_cover_the_orientation_switches_show_and_change_the_setting() {
+        show(SonoraSettings.Default.copy(fluidStyle = FluidStyle.Cover, coverMirrorHorizontal = true))
+
+        compose.onNodeWithText("Mirror horizontal").performScrollTo()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+        compose.onNodeWithText("Flip vertical").performScrollTo().performClick()
+        compose.onNodeWithText("Mirror horizontal").performClick()
+
+        assertEquals(listOf("flip=true", "mirror=false"), calls)
+    }
+
+    @Test
+    fun in_flow_the_orientation_switches_are_hidden() {
+        show(SonoraSettings.Default.copy(fluidStyle = FluidStyle.Flow))
+
+        compose.onNodeWithText("Flip vertical").assertDoesNotExist()
+        compose.onNodeWithText("Mirror horizontal").assertDoesNotExist()
     }
 }

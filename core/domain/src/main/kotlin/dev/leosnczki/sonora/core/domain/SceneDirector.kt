@@ -14,8 +14,21 @@ enum class FluidStyle {
     Cover,
 }
 
+/** Which way Cover shows the image; both on turns it by 180°. Flow ignores it. */
+data class CoverOrientation(val flipVertical: Boolean, val mirrorHorizontal: Boolean) {
+    companion object {
+        val Upright = CoverOrientation(flipVertical = false, mirrorHorizontal = false)
+    }
+}
+
 /** How the fluid looks and moves. Speeds are in the scene's own units; [scale] runs from calm (0) to turbulent (1). */
-data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: Float, val speedMax: Float) {
+data class FluidSettings(
+    val style: FluidStyle,
+    val scale: Float,
+    val speedMin: Float,
+    val speedMax: Float,
+    val orientation: CoverOrientation = CoverOrientation.Upright,
+) {
     companion object {
         /** What each style moves with while the Motion group is off; Flow's are the original's. */
         fun defaultsFor(style: FluidStyle) = when (style) {
@@ -30,6 +43,7 @@ data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: 
 /** What the wallpaper should draw at one moment. */
 data class SceneState(
     val style: FluidStyle,
+    val orientation: CoverOrientation,
     val currentArt: ArtId?,
     val previousArt: ArtId?,
     /** 0 shows [previousArt], 1 shows [currentArt]. */
@@ -101,7 +115,7 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
             playing || fading -> 60
             else -> 30
         }
-        return SceneState(fluid.style, current, previous, crossfade, phase, speed, fluid.scale, fps)
+        return SceneState(fluid.style, fluid.orientation, current, previous, crossfade, phase, speed, fluid.scale, fps)
     }
 
     /** When [flowStep] was last called; null before the first drawn frame. */

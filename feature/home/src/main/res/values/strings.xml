@@ -51,6 +51,10 @@
     <string name="fluid_style_desc">How the wallpaper turns the image into a fluid</string>
     <string name="fluid_style_flow">Flow</string>
     <string name="fluid_style_cover">Cover</string>
+    <string name="cover_flip_vertical">Flip vertical</string>
+    <string name="cover_flip_vertical_desc">Turn the image upside down</string>
+    <string name="cover_mirror_horizontal">Mirror horizontal</string>
+    <string name="cover_mirror_horizontal_desc">Swap the image left and right</string>
     <string name="fluid_group">Motion</string>
     <string name="fluid_group_desc">Use your own fluid settings instead of the defaults</string>
     <string name="fluid_scale">Fluid scale</string>

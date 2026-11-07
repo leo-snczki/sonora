@@ -23,6 +23,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
 
     suspend fun setFluidStyle(style: FluidStyle) = write { it[FLUID_STYLE] = style.name }
 
+    suspend fun setCoverFlipVertical(enabled: Boolean) = write { it[COVER_FLIP_VERTICAL] = enabled }
+
+    suspend fun setCoverMirrorHorizontal(enabled: Boolean) = write { it[COVER_MIRROR_HORIZONTAL] = enabled }
+
     suspend fun setFluidOverride(enabled: Boolean) = write { it[FLUID_OVERRIDE] = enabled }
 
     suspend fun setFluidScale(scale: Float) = write { it[FLUID_SCALE] = scale.coerceIn(0f, 1f) }
@@ -44,6 +48,8 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         return SonoraSettings(
             // Stored by name; an unknown name (a style since removed) falls back to the default.
             fluidStyle = FluidStyle.entries.firstOrNull { it.name == this[FLUID_STYLE] } ?: defaults.fluidStyle,
+            coverFlipVertical = this[COVER_FLIP_VERTICAL] ?: defaults.coverFlipVertical,
+            coverMirrorHorizontal = this[COVER_MIRROR_HORIZONTAL] ?: defaults.coverMirrorHorizontal,
             fluidOverride = this[FLUID_OVERRIDE] ?: defaults.fluidOverride,
             fluidScale = this[FLUID_SCALE] ?: defaults.fluidScale,
             speedMin = this[SPEED_MIN] ?: defaults.speedMin,
@@ -54,6 +60,8 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
 
     private companion object {
         val FLUID_STYLE = stringPreferencesKey("fluid_style")
+        val COVER_FLIP_VERTICAL = booleanPreferencesKey("cover_flip_vertical")
+        val COVER_MIRROR_HORIZONTAL = booleanPreferencesKey("cover_mirror_horizontal")
         val FLUID_OVERRIDE = booleanPreferencesKey("fluid_override")
         val FLUID_SCALE = floatPreferencesKey("fluid_scale")
         val SPEED_MIN = floatPreferencesKey("speed_min")

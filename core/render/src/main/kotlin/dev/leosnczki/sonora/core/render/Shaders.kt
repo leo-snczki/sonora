@@ -32,6 +32,8 @@ uniform float uMix;
 uniform float uPhase;
 uniform float uScale;
 uniform vec2 uCrop;
+/** 1 to mirror that axis: x for Mirror horizontal, y for Flip vertical. */
+uniform vec2 uFlip;
 
 float hash(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
@@ -72,6 +74,7 @@ void main() {
     uv = mirror(uv + (second - 0.5) * mix(0.35, 0.8, uScale));
     // Textures hold the bitmap top row at t = 0, while vUv.y = 0 is the bottom of the screen.
     uv.y = 1.0 - uv.y;
+    uv = mix(uv, 1.0 - uv, uFlip);
     vec3 color = mix(texture(uPrevious, uv).rgb, texture(uCurrent, uv).rgb, uMix);
     outColor = vec4(color, 1.0);
 }
