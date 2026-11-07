@@ -37,6 +37,10 @@ _Avoid_: palette, colour extraction (no colours are extracted)
 The Fluid Style in which the image stays recognisable, distorted by the fluid. The name of the style, not a synonym of Album Art.
 _Avoid_: classic, warp
 
+**Cover Orientation**:
+Which way Cover shows the image: Flip vertical turns it upside down, Mirror horizontal swaps left and right; both together turn it by 180°. Flow ignores it.
+_Avoid_: rotation (only 180° is reachable)
+
 **Backdrop**:
 The image the wallpaper shows when there is no Album Art to show.
 _Avoid_: default palette, default color, palette, texture

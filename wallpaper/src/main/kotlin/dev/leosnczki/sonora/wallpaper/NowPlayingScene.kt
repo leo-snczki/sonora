@@ -2,6 +2,7 @@ package dev.leosnczki.sonora.wallpaper
 
 import android.graphics.Bitmap
 import dev.leosnczki.sonora.core.domain.ArtId
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidSettings
 import dev.leosnczki.sonora.core.domain.NowPlaying
 import dev.leosnczki.sonora.core.domain.SceneDirector
@@ -28,6 +29,9 @@ class NowPlayingScene(
 
     @Synchronized
     fun setFluid(settings: FluidSettings) = director.setFluid(settings)
+
+    @Synchronized
+    fun setOrientation(orientation: CoverOrientation) = director.setOrientation(orientation)
 
     /** When art was last missing; null when nothing is waiting to be retried. */
     private var lastMissAt: Long? = null

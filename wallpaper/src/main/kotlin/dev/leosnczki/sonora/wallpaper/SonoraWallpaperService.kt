@@ -44,6 +44,7 @@ class SonoraWallpaperService : WallpaperService() {
             scope.launch {
                 settings.settings.collect {
                     scene.setFluid(it.effectiveFluid)
+                    scene.setOrientation(it.coverOrientation)
                     loop.poke()
                 }
             }

@@ -8,8 +8,7 @@ package dev.leosnczki.sonora.core.domain
  */
 data class SonoraSettings(
     val fluidStyle: FluidStyle,
-    val coverFlipVertical: Boolean,
-    val coverMirrorHorizontal: Boolean,
+    val coverOrientation: CoverOrientation,
     val fluidOverride: Boolean,
     val fluidScale: Float,
     val speedMin: Float,
@@ -18,16 +17,12 @@ data class SonoraSettings(
     val setupCompletedOnce: Boolean,
 ) {
     val effectiveFluid: FluidSettings
-        get() {
-            val fluid = if (fluidOverride) FluidSettings(fluidStyle, fluidScale, speedMin, speedMax) else FluidSettings.defaultsFor(fluidStyle)
-            return fluid.copy(orientation = CoverOrientation(coverFlipVertical, coverMirrorHorizontal))
-        }
+        get() = if (fluidOverride) FluidSettings(fluidStyle, fluidScale, speedMin, speedMax) else FluidSettings.defaultsFor(fluidStyle)
 
     companion object {
         val Default = SonoraSettings(
             fluidStyle = FluidSettings.Default.style,
-            coverFlipVertical = false,
-            coverMirrorHorizontal = false,
+            coverOrientation = CoverOrientation.Upright,
             fluidOverride = false,
             fluidScale = FluidSettings.Default.scale,
             speedMin = FluidSettings.Default.speedMin,

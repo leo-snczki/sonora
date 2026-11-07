@@ -22,13 +22,7 @@ data class CoverOrientation(val flipVertical: Boolean, val mirrorHorizontal: Boo
 }
 
 /** How the fluid looks and moves. Speeds are in the scene's own units; [scale] runs from calm (0) to turbulent (1). */
-data class FluidSettings(
-    val style: FluidStyle,
-    val scale: Float,
-    val speedMin: Float,
-    val speedMax: Float,
-    val orientation: CoverOrientation = CoverOrientation.Upright,
-) {
+data class FluidSettings(val style: FluidStyle, val scale: Float, val speedMin: Float, val speedMax: Float) {
     companion object {
         /** What each style moves with while the Motion group is off; Flow's are the original's. */
         fun defaultsFor(style: FluidStyle) = when (style) {
@@ -79,6 +73,12 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         fluid = settings
     }
 
+    private var orientation = CoverOrientation.Upright
+
+    fun setOrientation(orientation: CoverOrientation) {
+        this.orientation = orientation
+    }
+
     fun onNowPlaying(nowPlaying: NowPlaying?, atMillis: Long) {
         val nowPlayingState = nowPlaying?.playing == true
         if (nowPlayingState != playing) {
@@ -115,7 +115,7 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
             playing || fading -> 60
             else -> 30
         }
-        return SceneState(fluid.style, fluid.orientation, current, previous, crossfade, phase, speed, fluid.scale, fps)
+        return SceneState(fluid.style, orientation, current, previous, crossfade, phase, speed, fluid.scale, fps)
     }
 
     /** When [flowStep] was last called; null before the first drawn frame. */

@@ -122,7 +122,7 @@ class SceneDirectorTest {
     @Test
     fun the_scene_is_drawn_in_the_chosen_cover_orientation() {
         val mirrored = CoverOrientation(flipVertical = false, mirrorHorizontal = true)
-        director.setFluid(FluidSettings.defaultsFor(FluidStyle.Cover).copy(orientation = mirrored))
+        director.setOrientation(mirrored)
 
         assertEquals(mirrored, director.frame(atMillis = 0).orientation)
     }

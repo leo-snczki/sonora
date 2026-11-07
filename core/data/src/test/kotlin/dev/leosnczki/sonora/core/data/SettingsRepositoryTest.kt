@@ -1,6 +1,7 @@
 package dev.leosnczki.sonora.core.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import java.io.File
@@ -66,8 +67,10 @@ class SettingsRepositoryTest {
         }
         firstRun.cancelAndJoin()
 
-        val restored = repository(backgroundScope, file).settings.first()
-        assertEquals(true to true, restored.coverFlipVertical to restored.coverMirrorHorizontal)
+        assertEquals(
+            CoverOrientation(flipVertical = true, mirrorHorizontal = true),
+            repository(backgroundScope, file).settings.first().coverOrientation,
+        )
     }
 
     @Test
