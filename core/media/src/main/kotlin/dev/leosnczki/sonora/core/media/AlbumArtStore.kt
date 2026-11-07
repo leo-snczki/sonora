@@ -53,8 +53,10 @@ class AlbumArtStore @Inject constructor() {
         } else {
             original.scale((original.width * factor).toInt().coerceAtLeast(1), (original.height * factor).toInt().coerceAtLeast(1), filter = true)
         }
-        synchronized(this) { scaledCopies[id] = copy }
-        return copy
+        // GL can only upload software bitmaps; Players may hand over HARDWARE ones.
+        val uploadable = if (copy.config == Bitmap.Config.HARDWARE) copy.copy(Bitmap.Config.ARGB_8888, false) else copy
+        synchronized(this) { scaledCopies[id] = uploadable }
+        return uploadable
     }
 
     private companion object {

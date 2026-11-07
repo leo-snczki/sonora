@@ -87,16 +87,21 @@ void main() {
 }
 """
 
-    /** Final pass to the screen: brightness, plus a little noise so gradients don't band. */
+    /**
+     * Final pass to the screen: brightness, plus a little noise so gradients don't band.
+     * highp, and a noise whose inputs stay small: in mediump (16-bit on Mali) a classic
+     * sin(dot(fragCoord, ...)) hash overflows past ~65k and turns pixels black along a line.
+     */
     const val COMPOSE = """#version 300 es
-precision mediump float;
+precision highp float;
 in vec2 vUv;
 out vec4 outColor;
 uniform sampler2D uSource;
 uniform float uBrightness;
 
+// Interleaved gradient noise: a cheap, well spread dither that never leaves 0..1.
 float dither(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
+    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
 }
 
 void main() {
