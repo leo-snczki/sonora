@@ -57,9 +57,16 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         }
         val art = nowPlaying?.art
         if (art != current) {
-            previous = current
-            current = art
-            fadeStartedAt = atMillis
+            val progress = fadeProgress(atMillis)
+            if (progress < 0.5f) {
+                // The outgoing image is still mostly on screen: keep it and swap only the faint
+                // incoming one, so the fade carries on without a visible jump.
+                current = art
+            } else {
+                previous = current
+                current = art
+                fadeStartedAt = atMillis
+            }
         }
     }
 
@@ -70,7 +77,7 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         val speed = speedAt(atMillis)
         phase += speed * seconds
 
-        val crossfade = ((atMillis - fadeStartedAt).toFloat() / CROSSFADE_MILLIS).coerceIn(0f, 1f)
+        val crossfade = fadeProgress(atMillis)
         val fading = crossfade < 1f
         val fps = when {
             !visible -> 0
@@ -79,6 +86,9 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         }
         return SceneState(current, previous, crossfade, phase, speed, fluid.scale, fps)
     }
+
+    private fun fadeProgress(atMillis: Long): Float =
+        ((atMillis - fadeStartedAt).toFloat() / CROSSFADE_MILLIS).coerceIn(0f, 1f)
 
     /** Speed ramps linearly from where it was at the last play/pause change towards its target. */
     private fun speedAt(atMillis: Long): Float {

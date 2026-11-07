@@ -83,4 +83,31 @@ class SceneDirectorTest {
         assertEquals(1f, frame.crossfade, 0.001f)
         assertEquals(30, frame.targetFps)
     }
+
+    @Test
+    fun skipping_again_early_in_a_crossfade_keeps_the_image_that_is_mostly_on_screen() {
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        director.frame(atMillis = 5_000)
+        director.onNowPlaying(playing("b"), atMillis = 5_000)
+        director.frame(atMillis = 5_300) // b is 20% in, a 80%
+        director.onNowPlaying(playing("c"), atMillis = 5_300)
+
+        val frame = director.frame(atMillis = 5_300)
+        assertEquals(ArtId("a"), frame.previousArt)
+        assertEquals(ArtId("c"), frame.currentArt)
+        assertEquals(0.2f, frame.crossfade, 0.01f)
+    }
+
+    @Test
+    fun skipping_again_late_in_a_crossfade_fades_from_the_image_that_is_mostly_on_screen() {
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        director.frame(atMillis = 5_000)
+        director.onNowPlaying(playing("b"), atMillis = 5_000)
+        director.onNowPlaying(playing("c"), atMillis = 6_200) // b is 80% in
+
+        val frame = director.frame(atMillis = 6_200)
+        assertEquals(ArtId("b"), frame.previousArt)
+        assertEquals(ArtId("c"), frame.currentArt)
+        assertEquals(0f, frame.crossfade, 0.01f)
+    }
 }

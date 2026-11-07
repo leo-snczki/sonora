@@ -21,6 +21,7 @@ import dev.leosnczki.sonora.feature.home.NowPlayingCardState
 import dev.leosnczki.sonora.feature.home.PlayerApp
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,17 +54,30 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { repository.sessionSeen.collect { refreshCard() } }
         viewModelScope.launch {
             settings.settings.collect { value ->
+                settingsLoaded = true
                 _state.update { it.copy(settings = value) }
                 refreshSetup()
             }
         }
-        // The detection hint depends on time passing, so look again every few seconds.
-        viewModelScope.launch {
+    }
+
+    private var ticker: Job? = null
+    private var settingsLoaded = false
+
+    /** The detection hint depends on time passing: look again every few seconds, only while visible. */
+    private fun startTicker() {
+        ticker?.cancel()
+        ticker = viewModelScope.launch {
             while (true) {
                 delay(5_000)
                 refreshCard()
             }
         }
+    }
+
+    fun onPause() {
+        ticker?.cancel()
+        ticker = null
     }
 
     /** Call on resume: permissions and the wallpaper may have changed in system settings. */
@@ -75,9 +89,12 @@ class HomeViewModel @Inject constructor(
         _state.update { it.copy(showBatteryHint = battery) }
         refreshSetup()
         refreshCard()
+        startTicker()
     }
 
     private fun refreshSetup() {
+        // Until the settings are read we don't know if setup was completed before: show nothing yet.
+        if (!settingsLoaded) return
         val completedOnce = _state.value.settings.setupCompletedOnce
         if (status.requiredDone && !completedOnce) save { settings.markSetupCompleted() }
         _state.update { it.copy(setup = setupSteps(status, completedOnce)) }
@@ -117,7 +134,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val bitmap = withContext(Dispatchers.Default) { repository.art(id)?.asImageBitmap() }
             if (art?.first == id) {
-                art = id to bitmap
+                // A cover that is not available yet is retried on the next refresh.
+                art = if (bitmap != null) id to bitmap else null
                 refreshCard()
             }
         }
@@ -134,12 +152,23 @@ class HomeViewModel @Inject constructor(
 
     fun setFluidOverride(enabled: Boolean) = save { settings.setFluidOverride(enabled) }
 
-    fun setFluidScale(scale: Float) = save { settings.setFluidScale(scale) }
+    fun setFluidScale(scale: Float) = saveSoon("scale") { settings.setFluidScale(scale) }
 
-    fun setSpeedRange(min: Float, max: Float) = save { settings.setSpeedRange(min, max) }
+    fun setSpeedRange(min: Float, max: Float) = saveSoon("speed") { settings.setSpeedRange(min, max) }
 
     private fun save(write: suspend () -> Unit) {
         viewModelScope.launch { write() }
+    }
+
+    private val pendingWrites = mutableMapOf<String, Job>()
+
+    /** Sliders report every drag step: write the latest value once it settles for a moment. */
+    private fun saveSoon(key: String, write: suspend () -> Unit) {
+        pendingWrites.remove(key)?.cancel()
+        pendingWrites[key] = viewModelScope.launch {
+            delay(SLIDER_WRITE_DELAY_MILLIS)
+            write()
+        }
     }
 
     fun openPlayerChooser() {
@@ -148,5 +177,9 @@ class HomeViewModel @Inject constructor(
 
     fun closePlayerChooser() {
         _players.value = null
+    }
+
+    private companion object {
+        const val SLIDER_WRITE_DELAY_MILLIS = 120L
     }
 }

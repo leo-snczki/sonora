@@ -28,7 +28,10 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -192,12 +195,19 @@ fun LabeledSlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
 ) {
-    val description = describe(value)
+    // While dragging, the thumb follows the finger, not the (slower) persisted value.
+    var dragging by remember { mutableStateOf<Float?>(null) }
+    val shown = dragging ?: value
+    val description = describe(shown)
     Column(modifier.fillMaxWidth()) {
         SliderHeader(label, description, supporting)
         Slider(
-            value = value,
-            onValueChange = onValueChange,
+            value = shown,
+            onValueChange = {
+                dragging = it
+                onValueChange(it)
+            },
+            onValueChangeFinished = { dragging = null },
             valueRange = valueRange,
             steps = steps,
             colors = sliderColors,
@@ -221,14 +231,20 @@ fun LabeledRangeSlider(
     modifier: Modifier = Modifier,
     supporting: String? = null,
 ) {
-    val text = "${describe(value.start)} – ${describe(value.endInclusive)}"
+    var dragging by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
+    val shown = dragging ?: value
+    val text = "${describe(shown.start)} – ${describe(shown.endInclusive)}"
     val startInteraction = remember { MutableInteractionSource() }
     val endInteraction = remember { MutableInteractionSource() }
     Column(modifier.fillMaxWidth()) {
         SliderHeader(label, text, supporting)
         RangeSlider(
-            value = value,
-            onValueChange = onValueChange,
+            value = shown,
+            onValueChange = {
+                dragging = it
+                onValueChange(it)
+            },
+            onValueChangeFinished = { dragging = null },
             colors = sliderColors,
             startInteractionSource = startInteraction,
             endInteractionSource = endInteraction,
@@ -238,7 +254,7 @@ fun LabeledRangeSlider(
                     colors = sliderColors,
                     modifier = Modifier.semantics {
                         contentDescription = startLabel
-                        stateDescription = describe(value.start)
+                        stateDescription = describe(shown.start)
                     },
                 )
             },
@@ -248,7 +264,7 @@ fun LabeledRangeSlider(
                     colors = sliderColors,
                     modifier = Modifier.semantics {
                         contentDescription = endLabel
-                        stateDescription = describe(value.endInclusive)
+                        stateDescription = describe(shown.endInclusive)
                     },
                 )
             },

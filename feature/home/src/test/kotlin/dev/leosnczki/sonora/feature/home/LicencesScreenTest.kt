@@ -19,7 +19,8 @@ class LicencesScreenTest {
         compose.setContent { LicencesScreen(onBack = {}) }
 
         compose.onNodeWithText("Manrope and JetBrains Mono fonts", ignoreCase = true).assertExists()
-        compose.onNodeWithText("SIL Open Font License", substring = true).assertExists()
+        compose.onNodeWithText("The Manrope Project Authors", substring = true).assertExists()
+        compose.onNodeWithText("JetBrains Mono Project Authors", substring = true).assertExists()
         compose.onNodeWithText("Lucide icons", ignoreCase = true).assertExists()
         compose.onNodeWithText("ISC License", substring = true).assertExists()
         compose.onNodeWithText("Apache License", substring = true).assertExists()

@@ -38,18 +38,22 @@ class AlbumArtStore @Inject constructor() {
         return id
     }
 
-    /** At most [MAX_SIZE] px on the long side: the blur hides any more detail. */
-    @Synchronized
+    /**
+     * At most [MAX_SIZE] px on the long side: the blur hides any more detail. The scaling runs
+     * outside the lock, so [idOf] on the main thread never waits for it.
+     */
     fun scaled(id: ArtId): Bitmap? {
-        scaledCopies[id]?.let { return it }
-        val original = originals[id]?.takeUnless { it.isRecycled } ?: return null
+        val original = synchronized(this) {
+            scaledCopies[id]?.let { return it }
+            originals[id]?.takeUnless { it.isRecycled }
+        } ?: return null
         val factor = MAX_SIZE.toFloat() / max(original.width, original.height)
         val copy = if (factor >= 1f) {
             original.copy(Bitmap.Config.ARGB_8888, false)
         } else {
             original.scale((original.width * factor).toInt().coerceAtLeast(1), (original.height * factor).toInt().coerceAtLeast(1), filter = true)
         }
-        scaledCopies[id] = copy
+        synchronized(this) { scaledCopies[id] = copy }
         return copy
     }
 

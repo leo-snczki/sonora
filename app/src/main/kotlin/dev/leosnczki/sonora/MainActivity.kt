@@ -125,6 +125,11 @@ class MainActivity : ComponentActivity() {
         viewModel.onResume()
     }
 
+    override fun onPause() {
+        super.onPause()
+        viewModel.onPause()
+    }
+
     private fun startSafely(intent: Intent): Boolean = try {
         startActivity(intent)
         true

@@ -24,8 +24,9 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
     suspend fun setFluidScale(scale: Float) = write { it[FLUID_SCALE] = scale.coerceIn(0f, 1f) }
 
     suspend fun setSpeedRange(min: Float, max: Float) = write {
-        it[SPEED_MIN] = min.coerceIn(0f, 1f)
-        it[SPEED_MAX] = max.coerceIn(min, 1f)
+        val low = min.coerceIn(0f, 1f)
+        it[SPEED_MIN] = low
+        it[SPEED_MAX] = max.coerceIn(low, 1f)
     }
 
     suspend fun markSetupCompleted() = write { it[SETUP_COMPLETED_ONCE] = true }
