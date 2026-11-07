@@ -1,8 +1,13 @@
 package dev.leosnczki.sonora.home
 
+import android.Manifest
 import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
+import androidx.core.content.ContextCompat
 import android.content.pm.ResolveInfo
 import android.service.media.MediaBrowserService
 import androidx.core.graphics.drawable.toBitmap
@@ -17,6 +22,14 @@ class DeviceStatus @Inject constructor(@ApplicationContext private val context: 
 
     fun isSonoraTheWallpaper(): Boolean =
         WallpaperManager.getInstance(context).wallpaperInfo?.packageName == context.packageName
+
+    fun hasAudioAccess(): Boolean =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+    fun manufacturer(): String = Build.MANUFACTURER
+
+    fun isExemptFromBatteryOptimisation(): Boolean =
+        context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
 
     fun appName(packageName: String): String = runCatching {
         pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString()

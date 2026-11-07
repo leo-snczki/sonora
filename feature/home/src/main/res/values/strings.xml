@@ -59,4 +59,10 @@
     <string name="fluid_speed_desc">Slowest when the music is paused, fastest while it plays</string>
     <string name="fluid_speed_paused">Speed when paused</string>
     <string name="fluid_speed_playing">Speed while playing</string>
+    <string name="setup_audio">Let Beat Pulse hear the music</string>
+    <string name="setup_audio_action">Allow audio</string>
+    <string name="setup_audio_why">Only needed for Beat Pulse. Sonora listens to what your device plays, never the microphone.</string>
+    <string name="battery_hint_title">Keep Sonora running</string>
+    <string name="battery_hint_body">Your phone\'s maker is known to stop apps in the background, which makes the wallpaper lose track of your music. Set Sonora to "unrestricted" in the battery settings.</string>
+    <string name="battery_hint_action">Battery settings</string>
 </resources>

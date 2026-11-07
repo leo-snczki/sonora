@@ -30,7 +30,7 @@ class FluidGroupTest {
     }
 
     private fun show(settings: SonoraSettings) = compose.setContent {
-        HomeScreen(HomeScreenState.Preview.copy(wallpaperSet = true, notificationAccess = true, settings = settings), actions)
+        HomeScreen(HomeScreenState.Preview.copy(setup = null, settings = settings), actions)
     }
 
     @Test

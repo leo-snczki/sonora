@@ -26,7 +26,7 @@ class NowPlayingCardTest {
     }
 
     private fun show(card: NowPlayingCardState) = compose.setContent {
-        HomeScreen(HomeScreenState.Preview.copy(wallpaperSet = true, notificationAccess = true, nowPlaying = card), actions)
+        HomeScreen(HomeScreenState.Preview.copy(setup = null, nowPlaying = card), actions)
     }
 
     @Test

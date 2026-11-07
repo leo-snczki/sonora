@@ -10,6 +10,9 @@ import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.DetectionWatch
 import dev.leosnczki.sonora.core.domain.NowPlaying
+import dev.leosnczki.sonora.core.domain.SetupStatus
+import dev.leosnczki.sonora.core.domain.setupSteps
+import dev.leosnczki.sonora.core.domain.shouldShowBatteryHint
 import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.core.media.monotonicMillis
 import dev.leosnczki.sonora.feature.home.HomeMessage
@@ -34,6 +37,7 @@ class HomeViewModel @Inject constructor(
     private val device: DeviceStatus,
 ) : ViewModel() {
     private val detection = DetectionWatch()
+    private var status = SetupStatus(wallpaperSet = false, notificationAccess = false, audioAccess = false)
     private var art: Pair<ArtId, ImageBitmap?>? = null
 
     private val _state = MutableStateFlow(HomeScreenState(versionName = BuildConfig.VERSION_NAME))
@@ -47,7 +51,12 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch { repository.nowPlaying.collect { refreshCard() } }
         viewModelScope.launch { repository.sessionSeen.collect { refreshCard() } }
-        viewModelScope.launch { settings.settings.collect { value -> _state.update { it.copy(settings = value) } } }
+        viewModelScope.launch {
+            settings.settings.collect { value ->
+                _state.update { it.copy(settings = value) }
+                refreshSetup()
+            }
+        }
         // The detection hint depends on time passing, so look again every few seconds.
         viewModelScope.launch {
             while (true) {
@@ -61,12 +70,21 @@ class HomeViewModel @Inject constructor(
     fun onResume() {
         val access = repository.hasAccess()
         if (access) repository.start()
-        _state.update { it.copy(wallpaperSet = device.isSonoraTheWallpaper(), notificationAccess = access) }
+        status = SetupStatus(device.isSonoraTheWallpaper(), access, device.hasAudioAccess())
+        val battery = shouldShowBatteryHint(device.manufacturer(), device.isExemptFromBatteryOptimisation())
+        _state.update { it.copy(showBatteryHint = battery) }
+        refreshSetup()
         refreshCard()
     }
 
+    private fun refreshSetup() {
+        val completedOnce = _state.value.settings.setupCompletedOnce
+        if (status.requiredDone && !completedOnce) save { settings.markSetupCompleted() }
+        _state.update { it.copy(setup = setupSteps(status, completedOnce)) }
+    }
+
     private fun refreshCard() {
-        val access = _state.value.notificationAccess
+        val access = status.notificationAccess
         val now = monotonicMillis()
         detection.update(access, repository.sessionSeen.value, now)
         val hint = detection.showHint(now)
