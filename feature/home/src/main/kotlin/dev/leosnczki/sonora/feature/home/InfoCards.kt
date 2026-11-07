@@ -24,8 +24,17 @@ private fun Question(question: String, answer: String) {
 }
 
 @Composable
-internal fun HelpCard() {
+internal fun HelpCard(showBatteryHint: Boolean, actions: HomeActions) {
     SectionCard(stringResource(R.string.help_title)) {
+        if (showBatteryHint) {
+            Question(stringResource(R.string.battery_hint_title), stringResource(R.string.battery_hint_body))
+            SonoraButton(
+                stringResource(R.string.battery_hint_action),
+                actions::openBatterySettings,
+                variant = ButtonVariant.Secondary,
+                icon = painterResource(DsR.drawable.ic_battery_warning),
+            )
+        }
         Question(stringResource(R.string.help_detection_q), stringResource(R.string.help_detection_a))
         Question(stringResource(R.string.help_audio_q), stringResource(R.string.help_audio_a))
     }

@@ -1,5 +1,6 @@
 package dev.leosnczki.sonora
 
+import android.Manifest
 import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
@@ -11,6 +12,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var device: DeviceStatus
 
     private val viewModel: HomeViewModel by viewModels()
+    private val requestAudio = registerForActivityResult(ActivityResultContracts.RequestPermission()) { viewModel.onResume() }
     private var showLicences by mutableStateOf(false)
 
     private val actions = object : HomeActions {
@@ -55,6 +58,12 @@ class MainActivity : ComponentActivity() {
                 null
             }
             if (detail == null || !startSafely(detail)) startSafely(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }
+
+        override fun allowAudioAccess() = requestAudio.launch(Manifest.permission.RECORD_AUDIO)
+
+        override fun openBatterySettings() {
+            startSafely(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         }
 
         override fun openPlayerChooser() = viewModel.openPlayerChooser()

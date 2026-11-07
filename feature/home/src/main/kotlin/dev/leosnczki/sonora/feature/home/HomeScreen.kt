@@ -26,19 +26,26 @@ import dev.leosnczki.sonora.core.designsystem.SonoraTheme
 import dev.leosnczki.sonora.core.designsystem.component.PageScrim
 import dev.leosnczki.sonora.core.designsystem.component.SonoraHeader
 import dev.leosnczki.sonora.core.designsystem.component.SonoraSnackbarHost
+import dev.leosnczki.sonora.core.domain.SetupStatus
+import dev.leosnczki.sonora.core.domain.SetupStepState
 import dev.leosnczki.sonora.core.domain.SonoraSettings
+import dev.leosnczki.sonora.core.domain.setupSteps
 
 /** Everything the settings screen shows. Filled by [HomeViewModel] in the app. */
 data class HomeScreenState(
     val versionName: String,
-    val wallpaperSet: Boolean = false,
-    val notificationAccess: Boolean = false,
+    /** Steps for the setup card, or null to hide it. */
+    val setup: List<SetupStepState>? = null,
+    val showBatteryHint: Boolean = false,
     val nowPlaying: NowPlayingCardState = NowPlayingCardState.NoAccess,
     val message: HomeMessage? = null,
     val settings: SonoraSettings = SonoraSettings.Default,
 ) {
     companion object {
-        val Preview = HomeScreenState(versionName = "0.1.0")
+        val Preview = HomeScreenState(
+            versionName = "0.1.0",
+            setup = setupSteps(SetupStatus(wallpaperSet = false, notificationAccess = false, audioAccess = false), completedOnce = false),
+        )
     }
 }
 
@@ -49,6 +56,8 @@ enum class HomeMessage { ListenerRestarted }
 interface HomeActions {
     fun setWallpaper() {}
     fun allowNotificationAccess() {}
+    fun allowAudioAccess() {}
+    fun openBatterySettings() {}
     fun openPlayerChooser() {}
     fun openPlayer() {}
     fun restartListener() {}
@@ -83,12 +92,12 @@ fun HomeScreen(state: HomeScreenState, actions: HomeActions, modifier: Modifier 
                 ) {
                     SonoraHeader(stringResource(R.string.home_title), stringResource(R.string.home_tagline))
                     val primary: List<@Composable () -> Unit> = listOfNotNull(
-                        if (!state.wallpaperSet || !state.notificationAccess) ({ SetupCard(state, actions) }) else null,
+                        state.setup?.let { steps -> { SetupCard(steps, actions) } },
                         { NowPlayingCard(state.nowPlaying, actions) },
                         { LookCard(state.settings, actions) },
                     )
                     val secondary: List<@Composable () -> Unit> = listOf(
-                        { HelpCard() },
+                        { HelpCard(state.showBatteryHint, actions) },
                         { AboutCard(state.versionName, actions) },
                     )
                     if (twoColumns) {
