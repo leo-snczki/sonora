@@ -114,13 +114,13 @@ class SettingsRepositoryTest {
             setAlbumArtOverride(true)
             setKeepAfterPause(true)
             setKeepAfterReboot(true)
-            setBackdrop(BackdropId("lagoon"))
+            setBackdrop(BackdropId("builtin:lagoon"))
         }
         firstRun.cancelAndJoin()
 
         val restored = repository(backgroundScope, file).settings.first()
         assertEquals(AlbumArtKeep(afterPause = true, afterReboot = true), restored.effectiveAlbumArtKeep)
-        assertEquals(BackdropId("lagoon"), restored.backdrop)
+        assertEquals(BackdropId("builtin:lagoon"), restored.backdrop)
     }
 
     @Test

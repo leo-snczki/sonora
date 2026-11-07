@@ -10,14 +10,14 @@ data class BuiltinBackdrop(val id: BackdropId, val colors: List<Int>)
 /** Sonora's own built-in Backdrops; the first is the default. */
 object Backdrops {
     val Builtin = listOf(
-        BuiltinBackdrop(BackdropId("dusk"), listOf(0xFF2B1B4A.toInt(), 0xFF7A3E6B.toInt(), 0xFFE0866A.toInt())),
-        BuiltinBackdrop(BackdropId("lagoon"), listOf(0xFF0B3D4F.toInt(), 0xFF1D8A8A.toInt(), 0xFF9AD9C4.toInt())),
-        BuiltinBackdrop(BackdropId("ember"), listOf(0xFF3A0A0A.toInt(), 0xFFB23A1E.toInt(), 0xFFF2A541.toInt())),
-        BuiltinBackdrop(BackdropId("moss"), listOf(0xFF1E2B1A.toInt(), 0xFF5E7D3A.toInt())),
-        BuiltinBackdrop(BackdropId("orchid"), listOf(0xFF3B1F5C.toInt(), 0xFFB55BA8.toInt(), 0xFFF3B8D4.toInt(), 0xFFFFE6D6.toInt())),
-        BuiltinBackdrop(BackdropId("glacier"), listOf(0xFF1B2E4B.toInt(), 0xFF6F9BC9.toInt(), 0xFFE4EEF7.toInt())),
-        BuiltinBackdrop(BackdropId("citrus"), listOf(0xFF2F5D2A.toInt(), 0xFFC6D343.toInt(), 0xFFFFD25A.toInt())),
-        BuiltinBackdrop(BackdropId("graphite"), listOf(0xFF151515.toInt(), 0xFF4A4A4F.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:dusk"), listOf(0xFF2B1B4A.toInt(), 0xFF7A3E6B.toInt(), 0xFFE0866A.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:lagoon"), listOf(0xFF0B3D4F.toInt(), 0xFF1D8A8A.toInt(), 0xFF9AD9C4.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:ember"), listOf(0xFF3A0A0A.toInt(), 0xFFB23A1E.toInt(), 0xFFF2A541.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:moss"), listOf(0xFF1E2B1A.toInt(), 0xFF5E7D3A.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:orchid"), listOf(0xFF3B1F5C.toInt(), 0xFFB55BA8.toInt(), 0xFFF3B8D4.toInt(), 0xFFFFE6D6.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:glacier"), listOf(0xFF1B2E4B.toInt(), 0xFF6F9BC9.toInt(), 0xFFE4EEF7.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:citrus"), listOf(0xFF2F5D2A.toInt(), 0xFFC6D343.toInt(), 0xFFFFD25A.toInt())),
+        BuiltinBackdrop(BackdropId("builtin:graphite"), listOf(0xFF151515.toInt(), 0xFF4A4A4F.toInt())),
     )
 
     val Default = Builtin.first().id

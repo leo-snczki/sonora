@@ -75,8 +75,8 @@ class NowPlayingSceneTest {
     @Test
     fun choosing_a_backdrop_hands_it_over() {
         scene.takeImages(nanos = 5_000_000_000L)
-        scene.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = BackdropId("lagoon"))
+        scene.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = BackdropId("builtin:lagoon"))
 
-        assertSame(backdrop(BackdropId("lagoon")), scene.takeImages(nanos = 5_016_000_000L)?.current)
+        assertSame(backdrop(BackdropId("builtin:lagoon")), scene.takeImages(nanos = 5_016_000_000L)?.current)
     }
 }
