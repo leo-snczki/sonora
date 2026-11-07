@@ -97,6 +97,21 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         return SceneState(fluid.style, current, previous, crossfade, phase, speed, fluid.scale, fps)
     }
 
+    /** When [flowStep] was last called; null before the first drawn frame. */
+    private var lastFlowStepAt: Long? = null
+
+    /**
+     * How far, as a distance in RGB, Flow's colours may move towards a new image since the last
+     * call: the original's 0.01 per frame at 60 fps, made time-based. Call once per drawn frame;
+     * the first call returns [FLOW_SNAP], so the first image shows at once.
+     */
+    fun flowStep(atMillis: Long): Float {
+        val since = lastFlowStepAt
+        lastFlowStepAt = atMillis
+        if (since == null) return FLOW_SNAP
+        return (atMillis - since).coerceAtLeast(0) / 1000f * FLOW_TRAVEL_PER_SECOND
+    }
+
     private fun fadeProgress(atMillis: Long): Float =
         ((atMillis - fadeStartedAt).toFloat() / CROSSFADE_MILLIS).coerceIn(0f, 1f)
 
@@ -110,6 +125,10 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
 
     companion object {
         const val CROSSFADE_MILLIS = 1_500L
+
+        /** A step longer than any distance between two colours (√3): lands on the image at once. */
+        const val FLOW_SNAP = 2f
+        private const val FLOW_TRAVEL_PER_SECOND = 0.6f
         private const val SPEED_RAMP_SECONDS = 2f
     }
 }

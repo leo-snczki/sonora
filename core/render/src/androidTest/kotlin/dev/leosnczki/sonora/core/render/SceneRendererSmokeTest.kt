@@ -121,6 +121,18 @@ class SceneRendererSmokeTest {
         assertTrue(maxDistanceFrom(terracotta, 640, 400) <= 2, "only the dither may move it")
     }
 
+    @Test
+    fun on_a_new_album_art_flow_walks_its_colours_towards_it_by_the_given_step() {
+        val solid = { color: Int -> Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888).apply { eraseColor(color) } }
+        renderAt(640, 400, style = FluidStyle.Flow, image = solid(Color.RED))
+
+        renderer.setImages(current = solid(Color.BLUE), previous = null)
+        renderer.draw(SceneFrame.Still.copy(style = FluidStyle.Flow, flowStep = 0.1f))
+
+        // 0.1 along the straight line from red (1, 0, 0) to blue (0, 0, 1), whose length is √2.
+        assertTrue(maxDistanceFrom(Color.rgb(237, 0, 18), 640, 400) <= 3, "one step from red towards blue")
+    }
+
     private companion object {
         /** The reference tablet's display density (340 dpi). */
         const val TABLET_DENSITY = 340f / 160f

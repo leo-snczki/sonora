@@ -21,6 +21,7 @@ interface WallpaperScene {
     /** New images to upload since the last call, or null when unchanged. */
     fun takeImages(nanos: Long): SceneImages?
 
+    /** The frame to draw now. Called exactly once per drawn frame. */
     fun frameAt(nanos: Long): SceneFrame
 
     /** Frames per second wanted right now; 0 stops rendering. */
