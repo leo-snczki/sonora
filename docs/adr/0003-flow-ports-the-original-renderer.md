@@ -9,3 +9,5 @@ Consequence: this code is derived from Depthware's copyrighted work. That is acc
 - Behaviour spec written by an isolated agent, implemented blind (clean room): rejected by the user, too far from "exact".
 - Black-box imitation from screen recordings: rejected, further still.
 - Port the shaders and logic: chosen. Known quirks of the original are kept where they shape the look (the final tap's offset in 192px units, the 2.5 density fallback) and fixed where they only depend on the device (the track transition and speed ramp become time-based instead of per frame).
+
+Other deliberate differences: the fluid's clock is not wrapped at 10000 like the original's (it stays precise in highp for days, and wrapping would jump the fluid); the speed starts at the paused speed, not at 1.0; Performance Mode (`rand.png`) is not ported; and Flow's pre-blur and fade also run while Cover is shown (one 192px pass per frame), so switching to Flow shows current colours at once.

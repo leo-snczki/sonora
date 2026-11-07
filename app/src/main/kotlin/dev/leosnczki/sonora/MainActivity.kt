@@ -19,8 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import dev.leosnczki.sonora.core.media.NowPlayingListenerService
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.media.NowPlayingListenerService
 import dev.leosnczki.sonora.feature.home.HomeActions
 import dev.leosnczki.sonora.feature.home.HomeScreen
 import dev.leosnczki.sonora.feature.home.LicencesScreen

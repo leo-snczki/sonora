@@ -1,6 +1,13 @@
 package dev.leosnczki.sonora.core.render
 
 internal object Shaders {
+    /** Interleaved gradient noise: a cheap, well spread dither that never leaves 0..1. */
+    private const val DITHER = """
+float dither(vec2 p) {
+    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
+}
+"""
+
     /** One full-screen triangle; uv covers 0..1 on screen. */
     const val VERTEX = """#version 300 es
 out vec2 vUv;
@@ -99,11 +106,7 @@ out vec4 outColor;
 uniform sampler2D uSource;
 uniform float uBrightness;
 
-// Interleaved gradient noise: a cheap, well spread dither that never leaves 0..1.
-float dither(vec2 p) {
-    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
-}
-
+$DITHER
 void main() {
     vec3 color = texture(uSource, vUv).rgb;
     color = uBrightness >= 0.0 ? mix(color, vec3(1.0), uBrightness * 0.5) : color * (1.0 + uBrightness * 0.8);
@@ -113,7 +116,7 @@ void main() {
 """
 
     /**
-     * Flow, ported from the original (ADR 0003): a twice domain-warped fbm whose value is the
+     * Flow, ported from the original (ADR-0003): a twice domain-warped fbm whose value is the
      * coordinate to read the pre-blurred image at, so the image dissolves into its own colours.
      * [uScale] widens the window of the image that is read. v runs top-down here, as in the
      * original, so the fbm field keeps its orientation. highp: [uTime] grows without bound.
@@ -205,10 +208,7 @@ uniform sampler2D uSource;
 uniform vec2 uStep;
 uniform float uBrightness;
 
-float dither(vec2 p) {
-    return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))) - 0.5;
-}
-
+$DITHER
 void main() {
     vec2 flipped = vec2(-uStep.x, uStep.y);
     vec3 color = (texture(uSource, vUv + uStep).rgb + texture(uSource, vUv - uStep).rgb

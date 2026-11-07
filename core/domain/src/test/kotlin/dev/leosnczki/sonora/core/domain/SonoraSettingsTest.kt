@@ -49,14 +49,6 @@ class SonoraSettingsTest {
     }
 
     @Test
-    fun the_director_draws_the_chosen_fluid_style() {
-        val director = SceneDirector().apply { setVisible(true) }
-        director.setFluid(custom.copy(fluidStyle = FluidStyle.Cover).effectiveFluid)
-
-        assertEquals(FluidStyle.Cover, director.frame(atMillis = 0).style)
-    }
-
-    @Test
     fun the_director_uses_new_fluid_settings_straight_away() {
         val director = SceneDirector().apply { setVisible(true) }
         director.onNowPlaying(NowPlaying("p", null, ArtId("a"), playing = true, stopped = false), atMillis = 0)

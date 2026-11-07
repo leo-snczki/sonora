@@ -1,7 +1,7 @@
 feature,area,priority,original,clone,notes
 Live wallpaper service with GL renderer,wallpaper,must,yes,yes,S03; plain OpenGL ES 3.0 (ADR-0001)
 Fluid distortion of Album Art (domain warping),wallpaper,must,yes,yes,S03; Flow ports the original (ADR-0003); Cover is our own shader
-Fluid Style choice (Flow | Cover),settings,should,no,yes,S01; Sonora addition (#25)
+Fluid Style choice (Flow | Cover),settings,should,no,yes,S01; Sonora addition (#27)
 Blur pass over the art,wallpaper,must,yes,yes,S03; Kawase / dual-filter blur
 Pause rendering when not visible,wallpaper,must,yes,yes,battery
 Now Playing from Media Sessions,now playing,must,yes,yes,ADR-0002; NotificationListenerService grants access
