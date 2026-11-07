@@ -173,6 +173,27 @@ void main() {
 """
 
     /**
+     * Flow's track change, as in the original: each texel walks a straight line in RGB towards
+     * the new image, [uStep] at a time, and lands on it once closer than one step.
+     */
+    const val FLOW_FADE = """#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uShown;
+uniform sampler2D uTarget;
+uniform float uStep;
+
+void main() {
+    vec3 shown = texture(uShown, vUv).rgb;
+    vec3 target = texture(uTarget, vUv).rgb;
+    float distance = length(target - shown);
+    float amount = distance <= uStep ? 1.0 : uStep / distance;
+    outColor = vec4(mix(shown, target, amount), 1.0);
+}
+"""
+
+    /**
      * Flow's final pass to the screen, as in the original: one light Kawase tap (its offset is in
      * units of the 192px image, not of the screen), the brightness multiply, then our dither.
      */

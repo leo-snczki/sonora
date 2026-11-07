@@ -110,4 +110,22 @@ class SceneDirectorTest {
         assertEquals(ArtId("c"), frame.currentArt)
         assertEquals(0f, frame.crossfade, 0.01f)
     }
+
+    /** Total distance Flow's colours may travel over one second, drawn at [fps]. */
+    private fun flowTravelOverOneSecond(fps: Int): Float {
+        val director = SceneDirector()
+        director.flowStep(atMillis = 0)
+        return (1..fps).sumOf { director.flowStep(atMillis = it * 1000L / fps).toDouble() }.toFloat()
+    }
+
+    @Test
+    fun flow_colours_travel_0_6_per_second_whatever_the_frame_rate() {
+        assertEquals(0.6f, flowTravelOverOneSecond(fps = 60), 0.001f)
+        assertEquals(0.6f, flowTravelOverOneSecond(fps = 120), 0.001f)
+    }
+
+    @Test
+    fun the_first_flow_frame_snaps_to_the_image() {
+        assertTrue(SceneDirector().flowStep(atMillis = 5_000) >= SceneDirector.FLOW_SNAP)
+    }
 }

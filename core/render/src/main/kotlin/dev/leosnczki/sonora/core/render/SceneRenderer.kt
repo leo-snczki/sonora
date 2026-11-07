@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.opengl.GLES30
 import android.opengl.GLUtils
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.SceneDirector
 import kotlin.math.max
 
 /** What one frame should look like. Produced from the scene state, consumed by [SceneRenderer]. */
@@ -17,9 +18,11 @@ data class SceneFrame(
     val scale: Float,
     /** -1 darker .. +1 brighter. */
     val brightness: Float,
+    /** How far in RGB Flow's colours may move towards a new image this frame. */
+    val flowStep: Float,
 ) {
     companion object {
-        val Still = SceneFrame(style = FluidStyle.Flow, phase = 0f, crossfade = 1f, scale = 0.5f, brightness = 0f)
+        val Still = SceneFrame(style = FluidStyle.Flow, phase = 0f, crossfade = 1f, scale = 0.5f, brightness = 0f, flowStep = SceneDirector.FLOW_SNAP)
     }
 }
 
@@ -29,8 +32,9 @@ data class SceneFrame(
  * - Cover: warp the image into a small target, blur it with a few Kawase passes, then draw it to
  *   the screen.
  * - Flow, ported from the original (ADR 0003): once per image, shrink it to 192px and blur it
- *   heavily; each frame, read it through the fbm field at the screen size over the density, then
- *   draw that to the screen with one light blur tap.
+ *   heavily; each frame, walk the shown colours a step towards it, read them through the fbm
+ *   field at the screen size over the density, then draw that to the screen with one light blur
+ *   tap.
  */
 class SceneRenderer {
     private var warp = 0
@@ -38,6 +42,10 @@ class SceneRenderer {
     private var compose = 0
     private var flowNoise = 0
     private var flowCompose = 0
+    private var flowFade = 0
+    /** The colours Flow shows, ping-ponged by the fade: [flowShownIndex] is the latest. */
+    private var flowShown: Array<RenderTarget> = emptyArray()
+    private var flowShownIndex = 0
     private var flowSource = 0
     private var flowImage: Array<RenderTarget> = emptyArray()
     private var flowImageIndex = 0
@@ -56,6 +64,7 @@ class SceneRenderer {
         compose = Gl.program(Shaders.VERTEX, Shaders.COMPOSE)
         flowNoise = Gl.program(Shaders.VERTEX, Shaders.FLOW_NOISE)
         flowCompose = Gl.program(Shaders.VERTEX, Shaders.FLOW_COMPOSE)
+        flowFade = Gl.program(Shaders.VERTEX, Shaders.FLOW_FADE)
         val arrays = IntArray(1)
         GLES30.glGenVertexArrays(1, arrays, 0)
         vertexArray = arrays[0]
@@ -67,6 +76,7 @@ class SceneRenderer {
         flowSource = arrays[0]
         Gl.setupTexture(flowSource)
         flowImage = arrayOf(RenderTarget(FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE), RenderTarget(FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE))
+        flowShown = arrayOf(RenderTarget(FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE), RenderTarget(FLOW_IMAGE_SIZE, FLOW_IMAGE_SIZE))
         prepareFlowImage(null)
     }
 
@@ -138,17 +148,30 @@ class SceneRenderer {
     fun draw(frame: SceneFrame) {
         GLES30.glBindVertexArray(vertexArray)
         GLES30.glDisable(GLES30.GL_BLEND)
+        // In both styles, so Flow's colours are current whenever the style switches to it.
+        fadeFlow(frame.flowStep)
         when (frame.style) {
             FluidStyle.Flow -> drawFlow(frame)
             FluidStyle.Cover -> drawCover(frame)
         }
     }
 
+    private fun fadeFlow(step: Float) {
+        val next = 1 - flowShownIndex
+        flowShown[next].bind()
+        GLES30.glUseProgram(flowFade)
+        Gl.bindTexture(flowFade, "uShown", flowShown[flowShownIndex].texture, unit = 0)
+        Gl.bindTexture(flowFade, "uTarget", flowImage[flowImageIndex].texture, unit = 1)
+        GLES30.glUniform1f(Gl.uniform(flowFade, "uStep"), step)
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, 3)
+        flowShownIndex = next
+    }
+
     private fun drawFlow(frame: SceneFrame) {
         val fluid = flowTarget ?: return
         fluid.bind()
         GLES30.glUseProgram(flowNoise)
-        Gl.bindTexture(flowNoise, "uImage", flowImage[flowImageIndex].texture, unit = 0)
+        Gl.bindTexture(flowNoise, "uImage", flowShown[flowShownIndex].texture, unit = 0)
         GLES30.glUniform1f(Gl.uniform(flowNoise, "uTime"), frame.phase)
         GLES30.glUniform2f(Gl.uniform(flowNoise, "uResolution"), fluid.width.toFloat(), fluid.height.toFloat())
         GLES30.glUniform1f(Gl.uniform(flowNoise, "uScale"), frame.scale.coerceIn(0f, 1f) * 1.2f + 0.4f)
@@ -209,13 +232,14 @@ class SceneRenderer {
     fun release() {
         targets.forEach { it.release() }
         targets = emptyArray()
-        (flowImage + listOfNotNull(flowTarget)).forEach { it.release() }
+        (flowImage + flowShown + listOfNotNull(flowTarget)).forEach { it.release() }
         flowImage = emptyArray()
+        flowShown = emptyArray()
         flowTarget = null
         GLES30.glDeleteTextures(2, images, 0)
         GLES30.glDeleteTextures(1, intArrayOf(flowSource), 0)
         GLES30.glDeleteVertexArrays(1, intArrayOf(vertexArray), 0)
-        listOf(warp, kawase, compose, flowNoise, flowCompose).forEach { GLES30.glDeleteProgram(it) }
+        listOf(warp, kawase, compose, flowNoise, flowCompose, flowFade).forEach { GLES30.glDeleteProgram(it) }
     }
 
     private companion object {
