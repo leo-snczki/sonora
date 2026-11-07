@@ -8,8 +8,8 @@
   </defs>
   <rect x="18" y="18" width="72" height="72" rx="16" fill="url(#bg)" />
   <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
-    <path d="M34,54c6,-10 10,-10 16,0s10,10 16,0s10,-10 16,0" stroke-width="5" />
-    <path d="M34,42c6,-6 10,-6 16,0s10,6 16,0s10,-6 16,0" stroke-width="3" stroke-opacity="0.6" />
-    <path d="M34,66c6,-6 10,-6 16,0s10,6 16,0s10,-6 16,0" stroke-width="3" stroke-opacity="0.6" />
+    <path d="M30,54c6,-10 10,-10 16,0s10,10 16,0s10,-10 16,0" stroke-width="5" />
+    <path d="M30,42c6,-6 10,-6 16,0s10,6 16,0s10,-6 16,0" stroke-width="3" stroke-opacity="0.6" />
+    <path d="M30,66c6,-6 10,-6 16,0s10,6 16,0s10,-6 16,0" stroke-width="3" stroke-opacity="0.6" />
   </g>
 </svg>
