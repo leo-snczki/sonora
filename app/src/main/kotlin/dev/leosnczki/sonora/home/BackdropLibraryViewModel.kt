@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import androidx.exifinterface.media.ExifInterface
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
@@ -22,7 +23,10 @@ import dev.leosnczki.sonora.core.media.NowPlayingRepository
 import dev.leosnczki.sonora.feature.backdrops.BackdropLibraryState
 import dev.leosnczki.sonora.feature.backdrops.MineBackdrop
 import dev.leosnczki.sonora.feature.backdrops.cropped
+import dev.leosnczki.sonora.feature.backdrops.R as BackdropsR
 import java.io.IOException
+import java.text.DateFormat
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,8 +54,8 @@ class BackdropLibraryViewModel @Inject constructor(
     /** An image picked for upload, waiting to be cropped (S05); null otherwise. */
     val cropping: StateFlow<Picked?> = _cropping.asStateFlow()
 
-    /** An image the user picked, and the name it came with. */
-    class Picked(val image: Bitmap, val name: String)
+    /** An image the user picked, the name it came with, and the crop it starts from (its EXIF turn). */
+    class Picked(val image: Bitmap, val name: String, val crop: SquareCrop)
 
     /** Images of the user's Backdrops, read once each. */
     private val images = MutableStateFlow<Map<BackdropId, ImageBitmap>>(emptyMap())
@@ -129,15 +133,24 @@ class BackdropLibraryViewModel @Inject constructor(
         val resolver = context.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        // Small enough to hold and turn (long side), large enough for a 512 px Backdrop at 4× zoom (short side).
         var sample = 1
-        while (minOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= MAX_CROP_SOURCE) sample *= 2
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > MAX_LONG_SIDE ||
+            minOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= MIN_SHORT_SIDE
+        ) sample *= 2
         val image = resolver.openInputStream(uri)?.use {
             BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
         } ?: return null
+        val orientation = resolver.openInputStream(uri)?.use {
+            ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        } ?: ExifInterface.ORIENTATION_NORMAL
         val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) cursor.getString(0)?.substringBeforeLast('.') else null
         }
-        return Picked(image, name?.takeIf { it.isNotBlank() } ?: device.appName(context.packageName))
+        // Picker names are often bare ids ("1000012345"): those say nothing in Mine.
+        val readable = name?.takeIf { it.isNotBlank() && !it.all(Char::isDigit) }
+            ?: context.getString(BackdropsR.string.upload_default_name, DateFormat.getDateInstance().format(Date()))
+        return Picked(image, readable, SquareCrop.fromExif(image.width, image.height, orientation))
     }
 
     fun useCrop(crop: SquareCrop) {
@@ -147,8 +160,11 @@ class BackdropLibraryViewModel @Inject constructor(
             try {
                 val image = withContext(Dispatchers.Default) { cropped(picked.image, crop) }
                 library.save(image, picked.name, BackdropSource.Upload)
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                // Disk, database or bitmap errors alike: the upload is lost, the app carries on.
                 Log.w(TAG, "could not save the uploaded image", e)
+            } catch (e: OutOfMemoryError) {
+                Log.w(TAG, "the uploaded image was too large to crop", e)
             }
         }
     }
@@ -160,7 +176,10 @@ class BackdropLibraryViewModel @Inject constructor(
     private companion object {
         const val TAG = "SonoraBackdrops"
 
-        /** The short side a picked image is read at, at least: plenty for a 512 px Backdrop at 4× zoom. */
-        const val MAX_CROP_SOURCE = 2048
+        /** A picked image is read with its long side at most this… */
+        const val MAX_LONG_SIDE = 4096
+
+        /** …and its short side at least this, when the image has it: plenty for 512 px at 4× zoom. */
+        const val MIN_SHORT_SIDE = 2048
     }
 }

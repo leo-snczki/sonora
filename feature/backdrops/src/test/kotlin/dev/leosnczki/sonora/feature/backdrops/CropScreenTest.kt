@@ -23,7 +23,7 @@ class CropScreenTest {
     private var cancelled = false
     private val image = Bitmap.createBitmap(400, 200, Bitmap.Config.ARGB_8888)
 
-    private fun show() = compose.setContent { CropScreen(image, onUse = { used = it }, onCancel = { cancelled = true }) }
+    private fun show() = compose.setContent { CropScreen(image, SquareCrop(image.width, image.height), onUse = { used = it }, onCancel = { cancelled = true }) }
 
     @Test
     fun rotate_flip_and_zoom_are_labelled_buttons() {

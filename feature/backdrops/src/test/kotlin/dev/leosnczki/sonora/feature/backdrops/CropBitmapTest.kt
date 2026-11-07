@@ -45,4 +45,12 @@ class CropBitmapTest {
 
         assertEquals(Color.RED, out.at(50, 50))
     }
+
+    @Test
+    fun rotating_right_after_a_flip_still_turns_clockwise() {
+        // Flipped, blue is on the left; a clockwise quarter turn puts the left side on top.
+        val crop = SquareCrop(400, 200).flip().rotateRight().pan(dx = 0f, dy = -1_000f)
+
+        assertEquals(Color.BLUE, cropped(image, crop, size = 100).at(50, 50))
+    }
 }
