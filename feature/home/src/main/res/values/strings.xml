@@ -71,6 +71,14 @@
     <string name="graphics_group_desc">Use your own effect instead of the default blur</string>
     <string name="graphics_blur">Blur</string>
     <string name="graphics_fluted_glass">Fluted glass</string>
+    <string name="beat_group">Beat Pulse</string>
+    <string name="beat_group_desc">Let the fluid pulse with the music</string>
+    <string name="beat_locked">Needs audio access. Sonora only hears what your device plays, not the mic</string>
+    <string name="beat_allow">Allow</string>
+    <string name="beat_strength">Strength</string>
+    <string name="beat_strength_desc">How far the fluid swells on the bass</string>
+    <string name="beat_silent_title">Sonora can\'t hear this Player</string>
+    <string name="beat_silent_body">Music is playing but no sound reaches Beat Pulse. Some Players keep their audio to themselves; Sonora never falls back to the microphone.</string>
     <string name="misc_group">Misc</string>
     <string name="misc_group_desc">Use your own brightness instead of the default</string>
     <string name="brightness">Brightness</string>

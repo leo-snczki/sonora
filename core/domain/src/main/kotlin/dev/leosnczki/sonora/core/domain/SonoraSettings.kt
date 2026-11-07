@@ -33,6 +33,9 @@ data class SonoraSettings(
     val graphicsEffect: GraphicsEffect,
     val miscOverride: Boolean,
     val brightness: Float,
+    val beatOverride: Boolean,
+    /** 0..1; how strongly the fluid follows the beat. */
+    val beatStrength: Float,
     /** Set once the required setup steps were all done, so the setup card can shrink to what is missing. */
     val setupCompletedOnce: Boolean,
 ) {
@@ -44,6 +47,10 @@ data class SonoraSettings(
             effect = if (graphicsOverride) graphicsEffect else LookSettings.Default.effect,
             brightness = if (miscOverride) brightness else LookSettings.Default.brightness,
         )
+
+    /** Beat Pulse is off by default, like the original's Live Beats: no strength unless its group is on. */
+    val effectiveBeatStrength: Float
+        get() = if (beatOverride) beatStrength else 0f
 
     companion object {
         val Default = SonoraSettings(
@@ -57,6 +64,8 @@ data class SonoraSettings(
             graphicsEffect = LookSettings.Default.effect,
             miscOverride = false,
             brightness = LookSettings.Default.brightness,
+            beatOverride = false,
+            beatStrength = 0.5f,
             setupCompletedOnce = false,
         )
     }

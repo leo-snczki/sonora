@@ -95,6 +95,10 @@ class MainActivity : ComponentActivity() {
 
         override fun setBrightness(brightness: Float) = viewModel.setBrightness(brightness)
 
+        override fun setBeatOverride(enabled: Boolean) = viewModel.setBeatOverride(enabled)
+
+        override fun setBeatStrength(strength: Float) = viewModel.setBeatStrength(strength)
+
         override fun setFluidScale(scale: Float) = viewModel.setFluidScale(scale)
 
         override fun setSpeedRange(min: Float, max: Float) = viewModel.setSpeedRange(min, max)

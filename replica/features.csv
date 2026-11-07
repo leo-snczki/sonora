@@ -20,10 +20,10 @@ Speed drops to min when music pauses,wallpaper,must,yes,yes,
 Settings persisted and applied live,settings,must,yes,yes,DataStore
 Two-column layout from 600dp,ui,must,yes,yes,reference device is a tablet; grilling Q16
 English and Portuguese (pt-BR) strings,ui,must,yes,yes,all text in resources; grilling Q18
-Beat Pulse,beats,should,yes,no,RECORD_AUDIO; Visualizer
-Beat Pulse strength slider,beats,should,yes,no,
-Beat Pulse permission rationale and locked state,beats,should,yes,no,
-Beat Pulse silence hint after 30 s,beats,should,no,no,no mic fallback; grilling Q12
+Beat Pulse,beats,should,yes,yes,RECORD_AUDIO; Visualizer on the output mix; the original's 4-band formula with its mHz and signed-byte bugs fixed
+Beat Pulse strength slider,beats,should,yes,yes,
+Beat Pulse permission rationale and locked state,beats,should,yes,yes,
+Beat Pulse silence hint after 30 s,beats,should,no,yes,no mic fallback; grilling Q12
 Graphics group: Blur or Fluted Glass,settings,should,yes,yes,S01; Fluted Glass ported from the original (ADR-0003)
 Album art group: keep after pause / keep after reboot,settings,should,yes,no,
 Backdrop Library (Built-in / Mine tabs),backdrops,should,yes,no,S04; built-in = ~8 gradients generated in code

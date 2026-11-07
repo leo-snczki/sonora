@@ -47,6 +47,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
 
     suspend fun setBrightness(brightness: Float) = write { it[BRIGHTNESS] = brightness.coerceIn(-1f, 1f) }
 
+    suspend fun setBeatOverride(enabled: Boolean) = write { it[BEAT_OVERRIDE] = enabled }
+
+    suspend fun setBeatStrength(strength: Float) = write { it[BEAT_STRENGTH] = strength.coerceIn(0f, 1f) }
+
     suspend fun markSetupCompleted() = write { it[SETUP_COMPLETED_ONCE] = true }
 
     private suspend fun write(change: (MutablePreferences) -> Unit) {
@@ -70,6 +74,8 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
             graphicsEffect = GraphicsEffect.entries.firstOrNull { it.name == this[GRAPHICS_EFFECT] } ?: defaults.graphicsEffect,
             miscOverride = this[MISC_OVERRIDE] ?: defaults.miscOverride,
             brightness = this[BRIGHTNESS] ?: defaults.brightness,
+            beatOverride = this[BEAT_OVERRIDE] ?: defaults.beatOverride,
+            beatStrength = this[BEAT_STRENGTH] ?: defaults.beatStrength,
             setupCompletedOnce = this[SETUP_COMPLETED_ONCE] ?: defaults.setupCompletedOnce,
         )
     }
@@ -86,6 +92,8 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         val GRAPHICS_EFFECT = stringPreferencesKey("graphics_effect")
         val MISC_OVERRIDE = booleanPreferencesKey("misc_override")
         val BRIGHTNESS = floatPreferencesKey("brightness")
+        val BEAT_OVERRIDE = booleanPreferencesKey("beat_override")
+        val BEAT_STRENGTH = floatPreferencesKey("beat_strength")
         val SETUP_COMPLETED_ONCE = booleanPreferencesKey("setup_completed_once")
     }
 }

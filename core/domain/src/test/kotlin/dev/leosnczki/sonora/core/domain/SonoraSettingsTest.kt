@@ -82,4 +82,15 @@ class SonoraSettingsTest {
 
         assertEquals(LookSettings(effect = GraphicsEffect.FlutedGlass, brightness = -0.4f), look)
     }
+
+    @Test
+    fun beat_pulse_is_off_until_its_group_is_turned_on() {
+        assertEquals(0f, SonoraSettings.Default.copy(beatStrength = 0.8f).effectiveBeatStrength)
+        assertEquals(0.8f, SonoraSettings.Default.copy(beatOverride = true, beatStrength = 0.8f).effectiveBeatStrength)
+    }
+
+    @Test
+    fun beat_strength_starts_where_the_original_does() {
+        assertEquals(0.5f, SonoraSettings.Default.beatStrength)
+    }
 }
