@@ -70,6 +70,7 @@ class HomeViewModel @Inject constructor(
 
     private var ticker: Job? = null
     private var settingsLoaded = false
+    private var statusRead = false
 
     /** The detection hint depends on time passing: look again every few seconds, only while visible. */
     private fun startTicker() {
@@ -92,6 +93,7 @@ class HomeViewModel @Inject constructor(
         val access = repository.hasAccess()
         if (access) repository.start()
         status = SetupStatus(device.isSonoraTheWallpaper(), access, device.hasAudioAccess())
+        statusRead = true
         // Audio access may have just been granted: Beat Pulse can start listening.
         beats.update()
         val battery = shouldShowBatteryHint(device.manufacturer(), device.isExemptFromBatteryOptimisation())
@@ -104,7 +106,9 @@ class HomeViewModel @Inject constructor(
 
     /** When Sonora is not the wallpaper, the screen draws the chosen Backdrop behind itself. */
     private fun refreshBackdrop() {
-        val behind = if (status.wallpaperSet) null else (Backdrops.builtin(_state.value.settings.backdrop) ?: Backdrops.Builtin.first()).colors
+        // Until the device was asked whether Sonora is the wallpaper, draw nothing over it.
+        if (!statusRead) return
+        val behind = if (status.wallpaperSet) null else Backdrops.resolve(_state.value.settings.backdrop).colors
         _state.update { it.copy(backdropBehind = behind) }
     }
 

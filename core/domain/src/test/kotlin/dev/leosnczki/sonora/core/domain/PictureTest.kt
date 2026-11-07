@@ -12,8 +12,8 @@ class PictureTest {
     private fun nowPlaying(playing: Boolean = true, stopped: Boolean = false, art: ArtId? = cover) =
         NowPlaying(player = "p", track = null, art = art, playing = playing, stopped = stopped)
 
-    private fun picture(nowPlaying: NowPlaying?, afterPause: Boolean, afterReboot: Boolean) =
-        pictureFor(nowPlaying, AlbumArtKeep(afterPause, afterReboot), savedArt = saved, backdrop = backdrop)
+    private fun picture(nowPlaying: NowPlaying?, afterPause: Boolean, afterReboot: Boolean, lastArt: ArtId? = null) =
+        pictureFor(nowPlaying, AlbumArtKeep(afterPause, afterReboot), lastArt = lastArt, savedArt = saved, backdrop = backdrop)
 
     @Test
     fun playing_or_briefly_paused_music_shows_its_album_art_whatever_is_kept() {
@@ -42,6 +42,19 @@ class PictureTest {
     }
 
     @Test
+    fun album_art_kept_after_pausing_stays_when_the_player_session_goes_away() {
+        assertEquals(Picture.Art(cover), picture(null, afterPause = true, afterReboot = false, lastArt = cover))
+        assertEquals(Picture.Art(cover), picture(null, afterPause = true, afterReboot = true, lastArt = cover), "this run's art beats the saved one")
+        assertEquals(Picture.Backdrop(backdrop), picture(null, afterPause = false, afterReboot = false, lastArt = cover))
+    }
+
+    @Test
+    fun an_unknown_backdrop_resolves_to_the_first_built_in_one() {
+        assertEquals(Backdrops.Builtin.first(), Backdrops.resolve(BackdropId("gone")))
+        assertEquals(Backdrops.Builtin[1], Backdrops.resolve(Backdrops.Builtin[1].id))
+    }
+
+    @Test
     fun music_without_album_art_shows_the_backdrop() {
         assertEquals(Picture.Backdrop(backdrop), picture(nowPlaying(art = null), afterPause = true, afterReboot = true))
     }
@@ -50,7 +63,7 @@ class PictureTest {
     fun with_nothing_saved_the_backdrop_shows_before_any_music() {
         assertEquals(
             Picture.Backdrop(backdrop),
-            pictureFor(null, AlbumArtKeep(afterPause = true, afterReboot = true), savedArt = null, backdrop = backdrop),
+            pictureFor(null, AlbumArtKeep(afterPause = true, afterReboot = true), lastArt = null, savedArt = null, backdrop = backdrop),
         )
     }
 

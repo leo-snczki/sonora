@@ -60,7 +60,11 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
     private var savedArt: ArtId? = null
     private var backdrop = Backdrops.Default
     private var nowPlaying: NowPlaying? = null
-    private var current: Picture = pictureFor(null, keep, savedArt, backdrop)
+    /** This run's last Album Art, kept after pausing even once the Player's session is gone. */
+    private var lastArt: ArtId? = null
+    /** Until the first rules arrive the Picture is a guess: the first rules apply without a fade. */
+    private var rulesKnown = false
+    private var current: Picture = picture()
     private var previous: Picture = current
     private var fadeStartedAt = Long.MIN_VALUE / 2 // long ago: settled, and no overflow when subtracted
     private var playing = false
@@ -89,18 +93,27 @@ class SceneDirector(private var fluid: FluidSettings = FluidSettings.Default) {
         this.keep = keep
         this.savedArt = savedArt
         this.backdrop = backdrop
-        show(pictureFor(nowPlaying, keep, savedArt, backdrop), atMillis)
+        if (rulesKnown) {
+            show(picture(), atMillis)
+        } else {
+            rulesKnown = true
+            current = picture()
+            previous = current
+        }
     }
+
+    private fun picture() = pictureFor(nowPlaying, keep, lastArt, savedArt, backdrop)
 
     fun onNowPlaying(nowPlaying: NowPlaying?, atMillis: Long) {
         this.nowPlaying = nowPlaying
+        nowPlaying?.art?.let { lastArt = it }
         val nowPlayingState = nowPlaying?.playing == true
         if (nowPlayingState != playing) {
             speedAtChange = speedAt(atMillis)
             playingChangedAt = atMillis
             playing = nowPlayingState
         }
-        show(pictureFor(nowPlaying, keep, savedArt, backdrop), atMillis)
+        show(picture(), atMillis)
     }
 
     private fun show(picture: Picture, atMillis: Long) {

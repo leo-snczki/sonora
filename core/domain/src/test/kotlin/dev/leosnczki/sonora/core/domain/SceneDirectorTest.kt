@@ -185,4 +185,23 @@ class SceneDirectorTest {
 
         assertEquals(Picture.Art(ArtId("saved")), director.frame(atMillis = 0).currentPicture)
     }
+
+    @Test
+    fun the_first_rules_apply_at_once_without_a_fade() {
+        val fresh = SceneDirector().apply { setVisible(true) }
+        fresh.setPictureRules(AlbumArtKeep.Default, savedArt = null, backdrop = BackdropId("builtin:lagoon"), atMillis = 0)
+
+        val frame = fresh.frame(atMillis = 0)
+        assertEquals(Picture.Backdrop(BackdropId("builtin:lagoon")), frame.currentPicture)
+        assertEquals(1f, frame.crossfade, 0.001f)
+    }
+
+    @Test
+    fun the_album_art_kept_after_pausing_outlives_the_player_session() {
+        director.setPictureRules(AlbumArtKeep(afterPause = true, afterReboot = false), savedArt = null, backdrop = Backdrops.Default, atMillis = 0)
+        director.onNowPlaying(playing("a"), atMillis = 0)
+        director.onNowPlaying(null, atMillis = 30_000)
+
+        assertEquals(Picture.Art(ArtId("a")), director.frame(atMillis = 30_000).currentPicture)
+    }
 }

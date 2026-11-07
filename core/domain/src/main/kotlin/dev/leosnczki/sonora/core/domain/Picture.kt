@@ -23,6 +23,9 @@ object Backdrops {
     val Default = Builtin.first().id
 
     fun builtin(id: BackdropId): BuiltinBackdrop? = Builtin.firstOrNull { it.id == id }
+
+    /** The built-in Backdrop to draw for [id]: an unknown one falls back to the first. */
+    fun resolve(id: BackdropId): BuiltinBackdrop = builtin(id) ?: Builtin.first()
 }
 
 /** What the wallpaper draws: some Album Art, or a Backdrop. */
@@ -42,12 +45,13 @@ data class AlbumArtKeep(val afterPause: Boolean, val afterReboot: Boolean) {
 
 /**
  * What to draw for [nowPlaying]: its Album Art while it plays or is within the pause grace, and
- * after it stops too if [keep] says so; before any music, the [savedArt] from the last run if kept
- * after reboot; otherwise the [backdrop].
+ * after it stops too if [keep] says so, even once the Player's session is gone ([lastArt], this
+ * run's last Album Art); before any music, the [savedArt] from the last run if kept after reboot;
+ * otherwise the [backdrop].
  */
-fun pictureFor(nowPlaying: NowPlaying?, keep: AlbumArtKeep, savedArt: ArtId?, backdrop: BackdropId): Picture {
+fun pictureFor(nowPlaying: NowPlaying?, keep: AlbumArtKeep, lastArt: ArtId?, savedArt: ArtId?, backdrop: BackdropId): Picture {
     val art = when {
-        nowPlaying == null -> savedArt.takeIf { keep.afterReboot }
+        nowPlaying == null -> lastArt.takeIf { keep.afterPause } ?: savedArt.takeIf { keep.afterReboot }
         nowPlaying.stopped && !keep.afterPause -> null
         else -> nowPlaying.art
     }
