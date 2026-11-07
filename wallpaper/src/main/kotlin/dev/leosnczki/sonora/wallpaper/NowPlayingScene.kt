@@ -29,7 +29,8 @@ class NowPlayingScene(
     @Synchronized
     fun setFluid(settings: FluidSettings) = director.setFluid(settings)
 
-    private var lastMissAt = Long.MIN_VALUE
+    /** When art was last missing; null when nothing is waiting to be retried. */
+    private var lastMissAt: Long? = null
 
     /**
      * Render thread only. Bitmaps are resolved outside the lock: scaling a large cover must not
@@ -38,11 +39,12 @@ class NowPlayingScene(
     override fun takeImages(nanos: Long): SceneImages? {
         val wanted = synchronized(this) { director.frame(nanos / 1_000_000).let { it.currentArt to it.previousArt } }
         if (wanted == uploaded) return null
-        if (nanos - lastMissAt < RETRY_NANOS) return null
+        lastMissAt?.let { if (nanos - it < RETRY_NANOS) return null }
         val current = wanted.first?.let(artFor)
         val previous = wanted.second?.let(artFor)
         val complete = (wanted.first == null || current != null) && (wanted.second == null || previous != null)
-        if (complete) uploaded = wanted else lastMissAt = nanos
+        lastMissAt = if (complete) null else nanos
+        if (complete) uploaded = wanted
         return SceneImages(current ?: fallbackImage(), previous ?: fallbackImage())
     }
 
