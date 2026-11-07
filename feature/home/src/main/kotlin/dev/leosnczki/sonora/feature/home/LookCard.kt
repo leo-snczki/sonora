@@ -16,6 +16,7 @@ import dev.leosnczki.sonora.core.designsystem.component.SegmentedChoice
 import dev.leosnczki.sonora.core.designsystem.component.SettingGroup
 import dev.leosnczki.sonora.core.designsystem.component.SwitchRow
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import kotlin.math.roundToInt
 
@@ -27,6 +28,61 @@ internal fun LookCard(settings: SonoraSettings, actions: HomeActions) {
         if (settings.fluidStyle == FluidStyle.Cover) CoverOrientationSwitches(settings, actions)
         Spacer(Modifier.height(SonoraSpace.Md))
         FluidGroup(settings, actions)
+        Spacer(Modifier.height(SonoraSpace.Md))
+        GraphicsGroup(settings, actions)
+        Spacer(Modifier.height(SonoraSpace.Md))
+        MiscGroup(settings, actions)
+    }
+}
+
+@Composable
+private fun GraphicsGroup(settings: SonoraSettings, actions: HomeActions) {
+    val labels = mapOf(
+        GraphicsEffect.Blur to stringResource(R.string.graphics_blur),
+        GraphicsEffect.FlutedGlass to stringResource(R.string.graphics_fluted_glass),
+    )
+    SettingGroup(
+        label = stringResource(R.string.graphics_group),
+        supporting = stringResource(R.string.graphics_group_desc),
+        checked = settings.graphicsOverride,
+        onCheckedChange = actions::setGraphicsOverride,
+    ) {
+        SegmentedChoice(
+            options = GraphicsEffect.entries,
+            selected = settings.graphicsEffect,
+            onSelect = actions::setGraphicsEffect,
+            label = { labels.getValue(it) },
+        )
+    }
+}
+
+@Composable
+private fun MiscGroup(settings: SonoraSettings, actions: HomeActions) {
+    SettingGroup(
+        label = stringResource(R.string.misc_group),
+        supporting = stringResource(R.string.misc_group_desc),
+        checked = settings.miscOverride,
+        onCheckedChange = actions::setMiscOverride,
+    ) {
+        LabeledSlider(
+            label = stringResource(R.string.brightness),
+            supporting = stringResource(R.string.brightness_desc),
+            value = settings.brightness,
+            onValueChange = actions::setBrightness,
+            describe = ::signedPercent,
+            valueRange = -1f..1f,
+            centreTick = true,
+        )
+    }
+}
+
+/** "+20%", "−40%" (a true minus sign), "0%". */
+private fun signedPercent(value: Float): String {
+    val percent = (value * 100).roundToInt()
+    return when {
+        percent > 0 -> "+$percent%"
+        percent < 0 -> "\u2212${-percent}%"
+        else -> "0%"
     }
 }
 

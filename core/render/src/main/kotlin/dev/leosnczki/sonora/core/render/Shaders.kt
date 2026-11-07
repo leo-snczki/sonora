@@ -34,6 +34,7 @@ uniform float uScale;
 uniform vec2 uCrop;
 /** 1 to mirror that axis: x for Mirror horizontal, y for Flip vertical. */
 uniform vec2 uFlip;
+uniform float uBrightness;
 
 float hash(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
@@ -76,11 +77,16 @@ void main() {
     uv.y = 1.0 - uv.y;
     uv = mix(uv, 1.0 - uv, uFlip);
     vec3 color = mix(texture(uPrevious, uv).rgb, texture(uCurrent, uv).rgb, uMix);
+    // Brightness here, before the blur and whatever final effect, so every effect shows it.
+    color = uBrightness >= 0.0 ? mix(color, vec3(1.0), uBrightness * 0.5) : color * (1.0 + uBrightness * 0.8);
     outColor = vec4(color, 1.0);
 }
 """
 
-    /** One Kawase blur step: four diagonal taps at a growing distance. */
+    /**
+     * One Kawase blur step: four diagonal taps at a growing distance, times [uGain] (the
+     * original's brightness multiply in Flow's pre-blur; 1 elsewhere).
+     */
     const val KAWASE = """#version 300 es
 precision mediump float;
 in vec2 vUv;
@@ -88,6 +94,7 @@ out vec4 outColor;
 uniform sampler2D uSource;
 uniform vec2 uTexel;
 uniform float uDistance;
+uniform float uGain;
 
 void main() {
     vec2 d = (uDistance + 0.5) * uTexel;
@@ -95,12 +102,12 @@ void main() {
     sum += texture(uSource, vUv + vec2(d.x, -d.y));
     sum += texture(uSource, vUv + vec2(-d.x, d.y));
     sum += texture(uSource, vUv + vec2(d.x, d.y));
-    outColor = sum * 0.25;
+    outColor = vec4(sum.rgb * 0.25 * uGain, 1.0);
 }
 """
 
     /**
-     * Final pass to the screen: brightness, plus a little noise so gradients don't band.
+     * Cover's final pass to the screen with the Blur effect: a little noise so gradients don't band.
      * highp, and a noise whose inputs stay small: in mediump (16-bit on Mali) a classic
      * sin(dot(fragCoord, ...)) hash overflows past ~65k and turns pixels black along a line.
      */
@@ -109,12 +116,10 @@ precision highp float;
 in vec2 vUv;
 out vec4 outColor;
 uniform sampler2D uSource;
-uniform float uBrightness;
 
 $DITHER
 void main() {
     vec3 color = texture(uSource, vUv).rgb;
-    color = uBrightness >= 0.0 ? mix(color, vec3(1.0), uBrightness * 0.5) : color * (1.0 + uBrightness * 0.8);
     color += dither(gl_FragCoord.xy) / 255.0;
     outColor = vec4(color, 1.0);
 }
@@ -203,7 +208,7 @@ void main() {
 
     /**
      * Flow's final pass to the screen, as in the original: one light Kawase tap (its offset is in
-     * units of the 192px image, not of the screen), the brightness multiply, then our dither.
+     * units of the 192px image, not of the screen), the brightness multiply [uGain], then our dither.
      */
     const val FLOW_COMPOSE = """#version 300 es
 precision highp float;
@@ -211,16 +216,55 @@ in vec2 vUv;
 out vec4 outColor;
 uniform sampler2D uSource;
 uniform vec2 uStep;
-uniform float uBrightness;
+uniform float uGain;
 
 $DITHER
 void main() {
     vec2 flipped = vec2(-uStep.x, uStep.y);
     vec3 color = (texture(uSource, vUv + uStep).rgb + texture(uSource, vUv - uStep).rgb
         + texture(uSource, vUv + flipped).rgb + texture(uSource, vUv - flipped).rgb) * 0.25;
-    color *= 1.0 + uBrightness * 0.05;
+    color *= uGain;
     color += dither(gl_FragCoord.xy) / 255.0;
     outColor = vec4(color, 1.0);
+}
+"""
+
+    /**
+     * The Fluted Glass effect, ported from the original (ADR-0003), for both styles: [uSegments]
+     * vertical strips of reeded glass, each showing a log-compressed, wider slice of the fluid,
+     * dark on its right edge and light on its left, with the top fifth of the screen shaded. No
+     * brightness here, as in the original. Then our dither.
+     */
+    const val FLUTED_GLASS = """#version 300 es
+precision highp float;
+in vec2 vUv;
+out vec4 outColor;
+uniform sampler2D uSource;
+uniform float uSegments;
+
+$DITHER
+void main() {
+    const float inputOutputRatio = 1.8;
+    const float overlap = 0.8;
+    const float lightStrength = 0.10;
+
+    float segmentWidth = 1.0 / uSegments;
+    float inputSegmentWidth = segmentWidth * inputOutputRatio;
+    float overlapWidth = segmentWidth * overlap;
+    float segmentIndex = floor(vUv.x / segmentWidth);
+    float localX = (vUv.x - segmentIndex * segmentWidth) / segmentWidth;
+    float compressedX = log(1.0 + localX * 9.0) / log(10.0);
+    float inputStart = segmentIndex * (inputSegmentWidth - overlapWidth);
+    vec4 color = texture(uSource, vec2(inputStart + compressedX * inputSegmentWidth, vUv.y));
+
+    float top = smoothstep(0.8, 1.0, vUv.y);
+    color = mix(color, vec4(0.0, 0.0, 0.0, 0.5), top * 0.5);
+    float right = smoothstep(0.8, 1.0, localX);
+    color = mix(color, vec4(0.0, 0.0, 0.0, right), right * lightStrength);
+    float left = smoothstep(0.1, 0.0, localX);
+    color = mix(color, vec4(1.0, 1.0, 1.0, left), left * lightStrength);
+
+    outColor = vec4(color.rgb + dither(gl_FragCoord.xy) / 255.0, 1.0);
 }
 """
 }

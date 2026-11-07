@@ -67,6 +67,14 @@
     <string name="fluid_speed_desc">Mais lenta com a música pausada, mais rápida enquanto toca</string>
     <string name="fluid_speed_paused">Velocidade pausado</string>
     <string name="fluid_speed_playing">Velocidade tocando</string>
+    <string name="graphics_group">Gráficos</string>
+    <string name="graphics_group_desc">Usar seu próprio efeito em vez do desfoque padrão</string>
+    <string name="graphics_blur">Desfoque</string>
+    <string name="graphics_fluted_glass">Vidro canelado</string>
+    <string name="misc_group">Outros</string>
+    <string name="misc_group_desc">Usar seu próprio brilho em vez do padrão</string>
+    <string name="brightness">Brilho</string>
+    <string name="brightness_desc">Mais escuro à esquerda, mais claro à direita</string>
     <string name="setup_audio">Deixar o Beat Pulse ouvir a música</string>
     <string name="setup_audio_action">Permitir áudio</string>
     <string name="setup_audio_why">Só é necessário para o Beat Pulse. O Sonora escuta o que o aparelho toca, nunca o microfone.</string>

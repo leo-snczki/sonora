@@ -1,5 +1,21 @@
 package dev.leosnczki.sonora.core.domain
 
+/** The last pass that puts the fluid on the screen. */
+enum class GraphicsEffect {
+    /** A light blur, the original's default. */
+    Blur,
+
+    /** Vertical strips of reeded glass. */
+    FlutedGlass,
+}
+
+/** How the fluid is finished on screen. [brightness] runs from -1 (darker) to +1 (brighter). */
+data class LookSettings(val effect: GraphicsEffect, val brightness: Float) {
+    companion object {
+        val Default = LookSettings(effect = GraphicsEffect.Blur, brightness = 0f)
+    }
+}
+
 /**
  * Everything the user can set. Each group has an override switch, like the original: while it is
  * off, the group's defaults apply and its own values are kept for when it is turned back on.
@@ -13,11 +29,21 @@ data class SonoraSettings(
     val fluidScale: Float,
     val speedMin: Float,
     val speedMax: Float,
+    val graphicsOverride: Boolean,
+    val graphicsEffect: GraphicsEffect,
+    val miscOverride: Boolean,
+    val brightness: Float,
     /** Set once the required setup steps were all done, so the setup card can shrink to what is missing. */
     val setupCompletedOnce: Boolean,
 ) {
     val effectiveFluid: FluidSettings
         get() = if (fluidOverride) FluidSettings(fluidStyle, fluidScale, speedMin, speedMax) else FluidSettings.defaultsFor(fluidStyle)
+
+    val effectiveLook: LookSettings
+        get() = LookSettings(
+            effect = if (graphicsOverride) graphicsEffect else LookSettings.Default.effect,
+            brightness = if (miscOverride) brightness else LookSettings.Default.brightness,
+        )
 
     companion object {
         val Default = SonoraSettings(
@@ -27,6 +53,10 @@ data class SonoraSettings(
             fluidScale = FluidSettings.Default.scale,
             speedMin = FluidSettings.Default.speedMin,
             speedMax = FluidSettings.Default.speedMax,
+            graphicsOverride = false,
+            graphicsEffect = LookSettings.Default.effect,
+            miscOverride = false,
+            brightness = LookSettings.Default.brightness,
             setupCompletedOnce = false,
         )
     }

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +39,14 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         it[SPEED_MAX] = max.coerceIn(low, 1f)
     }
 
+    suspend fun setGraphicsOverride(enabled: Boolean) = write { it[GRAPHICS_OVERRIDE] = enabled }
+
+    suspend fun setGraphicsEffect(effect: GraphicsEffect) = write { it[GRAPHICS_EFFECT] = effect.name }
+
+    suspend fun setMiscOverride(enabled: Boolean) = write { it[MISC_OVERRIDE] = enabled }
+
+    suspend fun setBrightness(brightness: Float) = write { it[BRIGHTNESS] = brightness.coerceIn(-1f, 1f) }
+
     suspend fun markSetupCompleted() = write { it[SETUP_COMPLETED_ONCE] = true }
 
     private suspend fun write(change: (MutablePreferences) -> Unit) {
@@ -57,6 +66,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
             fluidScale = this[FLUID_SCALE] ?: defaults.fluidScale,
             speedMin = this[SPEED_MIN] ?: defaults.speedMin,
             speedMax = this[SPEED_MAX] ?: defaults.speedMax,
+            graphicsOverride = this[GRAPHICS_OVERRIDE] ?: defaults.graphicsOverride,
+            graphicsEffect = GraphicsEffect.entries.firstOrNull { it.name == this[GRAPHICS_EFFECT] } ?: defaults.graphicsEffect,
+            miscOverride = this[MISC_OVERRIDE] ?: defaults.miscOverride,
+            brightness = this[BRIGHTNESS] ?: defaults.brightness,
             setupCompletedOnce = this[SETUP_COMPLETED_ONCE] ?: defaults.setupCompletedOnce,
         )
     }
@@ -69,6 +82,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         val FLUID_SCALE = floatPreferencesKey("fluid_scale")
         val SPEED_MIN = floatPreferencesKey("speed_min")
         val SPEED_MAX = floatPreferencesKey("speed_max")
+        val GRAPHICS_OVERRIDE = booleanPreferencesKey("graphics_override")
+        val GRAPHICS_EFFECT = stringPreferencesKey("graphics_effect")
+        val MISC_OVERRIDE = booleanPreferencesKey("misc_override")
+        val BRIGHTNESS = floatPreferencesKey("brightness")
         val SETUP_COMPLETED_ONCE = booleanPreferencesKey("setup_completed_once")
     }
 }

@@ -10,6 +10,7 @@ import dev.leosnczki.sonora.core.data.SettingsRepository
 import dev.leosnczki.sonora.core.domain.ArtId
 import dev.leosnczki.sonora.core.domain.DetectionWatch
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
 import dev.leosnczki.sonora.core.domain.NowPlaying
 import dev.leosnczki.sonora.core.domain.SetupStatus
 import dev.leosnczki.sonora.core.domain.setupSteps
@@ -162,6 +163,14 @@ class HomeViewModel @Inject constructor(
     fun setFluidScale(scale: Float) = saveSoon("scale") { settings.setFluidScale(scale) }
 
     fun setSpeedRange(min: Float, max: Float) = saveSoon("speed") { settings.setSpeedRange(min, max) }
+
+    fun setGraphicsOverride(enabled: Boolean) = save { settings.setGraphicsOverride(enabled) }
+
+    fun setGraphicsEffect(effect: GraphicsEffect) = save { settings.setGraphicsEffect(effect) }
+
+    fun setMiscOverride(enabled: Boolean) = save { settings.setMiscOverride(enabled) }
+
+    fun setBrightness(brightness: Float) = saveSoon("brightness") { settings.setBrightness(brightness) }
 
     private fun save(write: suspend () -> Unit) {
         viewModelScope.launch { write() }

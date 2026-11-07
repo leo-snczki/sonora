@@ -63,4 +63,23 @@ class SonoraSettingsTest {
         assertEquals(0.9f, frame.scale, 0.001f)
         assertEquals(0.95f, frame.speed, 0.001f)
     }
+
+    @Test
+    fun with_the_graphics_and_misc_groups_off_the_wallpaper_is_blurred_at_normal_brightness() {
+        val look = SonoraSettings.Default.copy(graphicsEffect = GraphicsEffect.FlutedGlass, brightness = 0.7f).effectiveLook
+
+        assertEquals(LookSettings(effect = GraphicsEffect.Blur, brightness = 0f), look)
+    }
+
+    @Test
+    fun with_the_graphics_and_misc_groups_on_the_users_choices_apply() {
+        val look = SonoraSettings.Default.copy(
+            graphicsOverride = true,
+            graphicsEffect = GraphicsEffect.FlutedGlass,
+            miscOverride = true,
+            brightness = -0.4f,
+        ).effectiveLook
+
+        assertEquals(LookSettings(effect = GraphicsEffect.FlutedGlass, brightness = -0.4f), look)
+    }
 }

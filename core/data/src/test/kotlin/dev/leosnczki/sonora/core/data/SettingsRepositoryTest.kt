@@ -3,6 +3,8 @@ package dev.leosnczki.sonora.core.data
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import dev.leosnczki.sonora.core.domain.CoverOrientation
 import dev.leosnczki.sonora.core.domain.FluidStyle
+import dev.leosnczki.sonora.core.domain.GraphicsEffect
+import dev.leosnczki.sonora.core.domain.LookSettings
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import java.io.File
 import kotlin.test.assertEquals
@@ -71,6 +73,30 @@ class SettingsRepositoryTest {
             CoverOrientation(flipVertical = true, mirrorHorizontal = true),
             repository(backgroundScope, file).settings.first().coverOrientation,
         )
+    }
+
+    @Test
+    fun the_graphics_and_misc_groups_survive_a_restart() = runTest(UnconfinedTestDispatcher()) {
+        val file = File(folder.root, "look.preferences_pb")
+        val firstRun = Job()
+        repository(CoroutineScope(coroutineContext + firstRun), file).apply {
+            setGraphicsOverride(true)
+            setGraphicsEffect(GraphicsEffect.FlutedGlass)
+            setMiscOverride(true)
+            setBrightness(-0.3f)
+        }
+        firstRun.cancelAndJoin()
+
+        val restored = repository(backgroundScope, file).settings.first()
+        assertEquals(LookSettings(GraphicsEffect.FlutedGlass, -0.3f), restored.effectiveLook)
+    }
+
+    @Test
+    fun brightness_is_clamped_to_minus_one_to_one() = runTest {
+        val repo = repository(backgroundScope, File(folder.root, "brightness.preferences_pb"))
+
+        repo.setBrightness(1.7f)
+        assertEquals(1f, repo.settings.first().brightness)
     }
 
     @Test
