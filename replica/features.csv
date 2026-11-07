@@ -13,9 +13,9 @@ Setup card (set wallpaper / notification access / audio optional),onboarding,mus
 Open the system wallpaper picker straight on Sonora,onboarding,must,no,yes,ACTION_CHANGE_LIVE_WALLPAPER
 Wallpaper metadata (label author description thumbnail settings activity),onboarding,must,yes,yes,S02
 Now Playing card (no access / nothing playing / playing),now playing,must,yes,yes,S01
-Fluid group with override toggle (scale and speed min-max),settings,must,yes,no,group toggle like the original; off = defaults
+Fluid group with override toggle (scale and speed min-max),settings,must,yes,yes,group toggle like the original; off = defaults
 Speed drops to min when music pauses,wallpaper,must,yes,yes,
-Settings persisted and applied live,settings,must,yes,no,DataStore
+Settings persisted and applied live,settings,must,yes,yes,DataStore
 Two-column layout from 600dp,ui,must,yes,yes,reference device is a tablet; grilling Q16
 English and Portuguese (pt-BR) strings,ui,must,yes,yes,all text in resources; grilling Q18
 Beat Pulse,beats,should,yes,no,RECORD_AUDIO; Visualizer

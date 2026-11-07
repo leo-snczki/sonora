@@ -68,6 +68,12 @@ class MainActivity : ComponentActivity() {
 
         override fun messageShown() = viewModel.messageShown()
 
+        override fun setFluidOverride(enabled: Boolean) = viewModel.setFluidOverride(enabled)
+
+        override fun setFluidScale(scale: Float) = viewModel.setFluidScale(scale)
+
+        override fun setSpeedRange(min: Float, max: Float) = viewModel.setSpeedRange(min, max)
+
         override fun openProjectPage() {
             startSafely(Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_URL)))
         }
