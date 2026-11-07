@@ -51,7 +51,7 @@ class NowPlayingScene(
     @Synchronized
     override fun frameAt(nanos: Long): SceneFrame {
         val state = director.frame(nanos / 1_000_000)
-        return SceneFrame(phase = state.phase, crossfade = state.crossfade, scale = state.scale, brightness = 0f)
+        return SceneFrame(style = state.style, phase = state.phase, crossfade = state.crossfade, scale = state.scale, brightness = 0f)
     }
 
     @Synchronized

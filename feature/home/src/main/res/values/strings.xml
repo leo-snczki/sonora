@@ -47,6 +47,10 @@
     <string name="chooser_empty_body">Install a music app, or open the one you use directly.</string>
     <string name="chooser_open">Open</string>
     <string name="look_title">Look</string>
+    <string name="fluid_style">Fluid style</string>
+    <string name="fluid_style_desc">How the wallpaper turns the image into a fluid</string>
+    <string name="fluid_style_flow">Flow</string>
+    <string name="fluid_style_cover">Cover</string>
     <string name="fluid_group">Motion</string>
     <string name="fluid_group_desc">Use your own fluid settings instead of the defaults</string>
     <string name="fluid_scale">Fluid scale</string>

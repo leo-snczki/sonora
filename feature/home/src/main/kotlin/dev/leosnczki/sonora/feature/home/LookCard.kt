@@ -1,11 +1,20 @@
 package dev.leosnczki.sonora.feature.home
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import dev.leosnczki.sonora.core.designsystem.SonoraColors
+import dev.leosnczki.sonora.core.designsystem.SonoraSpace
+import dev.leosnczki.sonora.core.designsystem.SonoraType
 import dev.leosnczki.sonora.core.designsystem.component.LabeledRangeSlider
 import dev.leosnczki.sonora.core.designsystem.component.LabeledSlider
 import dev.leosnczki.sonora.core.designsystem.component.SectionCard
+import dev.leosnczki.sonora.core.designsystem.component.SegmentedChoice
 import dev.leosnczki.sonora.core.designsystem.component.SettingGroup
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import kotlin.math.roundToInt
 
@@ -13,8 +22,28 @@ import kotlin.math.roundToInt
 @Composable
 internal fun LookCard(settings: SonoraSettings, actions: HomeActions) {
     SectionCard(stringResource(R.string.look_title)) {
+        FluidStyleChoice(settings.fluidStyle, actions)
+        Spacer(Modifier.height(SonoraSpace.Md))
         FluidGroup(settings, actions)
     }
+}
+
+/** Outside the Motion group's override: the style is a choice of look, not fine-tuning. */
+@Composable
+private fun FluidStyleChoice(style: FluidStyle, actions: HomeActions) {
+    Text(stringResource(R.string.fluid_style), style = SonoraType.BodyStrong, color = SonoraColors.Text)
+    Text(stringResource(R.string.fluid_style_desc), style = SonoraType.Caption, color = SonoraColors.TextMuted)
+    Spacer(Modifier.height(SonoraSpace.Sm))
+    val labels = mapOf(
+        FluidStyle.Flow to stringResource(R.string.fluid_style_flow),
+        FluidStyle.Cover to stringResource(R.string.fluid_style_cover),
+    )
+    SegmentedChoice(
+        options = FluidStyle.entries,
+        selected = style,
+        onSelect = actions::setFluidStyle,
+        label = { labels.getValue(it) },
+    )
 }
 
 @Composable

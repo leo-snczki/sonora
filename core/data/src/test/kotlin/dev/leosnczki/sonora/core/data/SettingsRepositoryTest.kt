@@ -1,6 +1,7 @@
 package dev.leosnczki.sonora.core.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import dev.leosnczki.sonora.core.domain.FluidStyle
 import dev.leosnczki.sonora.core.domain.SonoraSettings
 import java.io.File
 import kotlin.test.assertEquals
@@ -43,6 +44,16 @@ class SettingsRepositoryTest {
         val restored = repository(backgroundScope, file).settings.first()
 
         assertEquals(SonoraSettings.Default.copy(fluidOverride = true, fluidScale = 0.8f, speedMin = 0.2f, speedMax = 0.9f, setupCompletedOnce = true), restored)
+    }
+
+    @Test
+    fun the_fluid_style_survives_a_restart() = runTest(UnconfinedTestDispatcher()) {
+        val file = File(folder.root, "style.preferences_pb")
+        val firstRun = Job()
+        repository(CoroutineScope(coroutineContext + firstRun), file).setFluidStyle(FluidStyle.Cover)
+        firstRun.cancelAndJoin()
+
+        assertEquals(FluidStyle.Cover, repository(backgroundScope, file).settings.first().fluidStyle)
     }
 
     @Test
